@@ -42,6 +42,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     testImplementation(libs.junit)
+    testImplementation(libs.kotest.runner.junit5)
+    testImplementation(libs.kotest.assertions.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -50,6 +52,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
 tasks.withType<Test> {
+    useJUnitPlatform()
     testLogging {
         events("passed", "failed", "skipped")
     }
