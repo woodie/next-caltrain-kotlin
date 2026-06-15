@@ -114,16 +114,15 @@ fun TripDetailScreen(
             ) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = colors.appText)
             }
-            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = title,
                 fontSize = AppStyle.fontStatusBar,
                 color = colors.appText,
                 maxLines = 1,
-                softWrap = false,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
+                modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
             )
-            Spacer(modifier = Modifier.weight(1f))
             // Balance the back button so title stays centered
             Spacer(modifier = Modifier.size(AppStyle.iconButtonSizeDp.dp))
         }
@@ -194,12 +193,12 @@ private fun StopRow(
         Canvas(
             modifier = Modifier
                 .width(dotSizeDp)
-                .fillMaxHeight()
+                .height(rowHeightDp)   // explicit height — fillMaxHeight() is unreliable here
         ) {
             val cx = size.width / 2f
             val dotR = dotSizeDp.toPx() / 2f
             val dotCY = dotOffsetYDp.toPx() + dotR
-            val lineW = 2.dp.toPx()
+            val lineW = 3.dp.toPx()
 
             // Line from top of row to dot edge (all rows except first)
             if (!isFirst) {
