@@ -135,14 +135,17 @@ fun TripDetailScreen(
                 .padding(top = 8.dp, bottom = 24.dp)
         ) {
             stops.forEachIndexed { index, stop ->
-                // Segment below this dot takes the next stop's track color
+                // Line colors are time-based (not role-based) so origin/destination dots
+                // show white while their segment colors still reflect past/future travel.
+                val stopLineColor = if (goodTimes.inThePast(stop.time)) colors.calPast else colors.calArrive
                 val nextTrackColor = stops.getOrNull(index + 1)?.let { next ->
-                    if (next.role == StopRole.PAST) colors.calPast else colors.calArrive
+                    if (goodTimes.inThePast(next.time)) colors.calPast else colors.calArrive
                 } ?: colors.calArrive
                 StopRow(
                     stop = stop,
                     isFirst = index == 0,
                     isLast = index == stops.size - 1,
+                    lineColor = stopLineColor,
                     nextTrackColor = nextTrackColor,
                     colors = colors,
                 )
@@ -156,26 +159,28 @@ private fun StopRow(
     stop: TripStop,
     isFirst: Boolean,
     isLast: Boolean,
-    nextTrackColor: androidx.compose.ui.graphics.Color,
+    lineColor: androidx.compose.ui.graphics.Color,    // time-based color for line above dot
+    nextTrackColor: androidx.compose.ui.graphics.Color, // time-based color for line below dot
     colors: com.netpress.nextcaltrain.ui.theme.AppColors,
 ) {
-    val trackColor = if (stop.role == StopRole.PAST) colors.calPast else colors.calArrive
+    // Dot is white for key stops; lines use time-based colors regardless of role
     val dotColor = when (stop.role) {
         StopRole.ORIGIN, StopRole.DESTINATION, StopRole.TRANSFER -> colors.appText
-        else -> trackColor
+        else -> lineColor
     }
     val dotSizeDp = 14.dp
-    val dotOffsetYDp = 4.dp
+    val dotOffsetYDp = 17.dp  // centers dot in the 48dp row: (48-14)/2 = 17
+    val textOffsetYDp = 4.dp
     val rowHeightDp = 48.dp
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(rowHeightDp)
-            .padding(horizontal = 16.dp),
+            .padding(start = 32.dp, end = 16.dp),  // extra left padding shifts content right
         verticalAlignment = Alignment.Top,
     ) {
-        // Time — right-aligned in fixed-width column
+        // Time — right-aligned in fixed-width column (80dp to avoid clipping "10:15am")
         Text(
             text = GoodTimes.fullTime(stop.time),
             fontSize = AppStyle.fontTrain,
@@ -183,8 +188,8 @@ private fun StopRow(
             softWrap = false,
             textAlign = TextAlign.End,
             modifier = Modifier
-                .width(70.dp)
-                .padding(top = dotOffsetYDp),
+                .width(80.dp)
+                .padding(top = textOffsetYDp),
         )
 
         Spacer(modifier = Modifier.width(12.dp))
@@ -203,7 +208,7 @@ private fun StopRow(
             // Line from top of row to dot edge (all rows except first)
             if (!isFirst) {
                 drawLine(
-                    color = trackColor,
+                    color = lineColor,
                     start = Offset(cx, 0f),
                     end = Offset(cx, dotCY - dotR),
                     strokeWidth = lineW,
@@ -229,7 +234,7 @@ private fun StopRow(
         Spacer(modifier = Modifier.width(12.dp))
 
         // Station name (+ optional transfer label) — weight(1f) constrains width so text never wraps
-        Column(modifier = Modifier.weight(1f).padding(top = dotOffsetYDp)) {
+        Column(modifier = Modifier.weight(1f).padding(top = textOffsetYDp)) {
             Text(
                 text = stop.station,
                 fontSize = AppStyle.fontTrain,
