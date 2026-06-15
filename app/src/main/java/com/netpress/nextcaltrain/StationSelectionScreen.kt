@@ -208,7 +208,7 @@ private fun StationList(
 
         LazyColumn(
             state = listState,
-            modifier = Modifier.fillMaxSize().padding(start = 36.dp),
+            modifier = Modifier.fillMaxSize(),
         ) {
             itemsIndexed(stations) { index, station ->
                 if (index > 0) {
@@ -218,7 +218,7 @@ private fun StationList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .pointerInput(station) { detectTapGestures { onSelect(station) } }
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                        .padding(start = 73.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
