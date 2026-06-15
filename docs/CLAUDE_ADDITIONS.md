@@ -38,6 +38,23 @@ parent; accumulate `positionChange().y`; distinguish tap vs drag by comparing to
 displacement to `viewConfiguration.touchSlop`. Commits offset on drag end, routes tap
 to the tapped row by computing `slot = (down.position.y / rowHeightPx).toInt()`.
 
+### Drag Selection Persistence (`rememberUpdatedState`)
+`pointerInput` lambdas capture their closure at creation time. `offset` and
+`effectiveOffset` are plain `Int` values — they go stale inside the lambda even when the
+underlying StateFlow updates. Calling `vm.setOffset(effectiveOffset)` at drag end was
+sending the original next-train index, causing snap-back on release.
+
+**Fix**: `rememberUpdatedState(offset)` / `rememberUpdatedState(trips)` gives the lambda
+a `State<T>` holder that always reflects the latest composable value without restarting
+the coroutine. At drag end, read `latestOffset.value + dragShift` (live) instead of the
+captured stale `effectiveOffset`.
+
+Additionally: `vm.markDragStart()` (sets `userSelected = true`) is called the moment
+`touchSlop` is exceeded. This prevents the 1-second timer (`updateNextIndex`) from
+resetting `_offset` mid-drag, which would have shifted the drag baseline unexpectedly.
+The `pointerInput` key is `(trips.size)` only — not `offset` — so the coroutine is never
+cancelled mid-drag by an offset change.
+
 ### Track Line in TripDetailScreen
 `fillMaxHeight()` inside a Row with wrap-content height does nothing. Fix: give the Row
 a fixed `.height(rowHeightDp)` and use `Canvas(Modifier.width(dotSize).fillMaxHeight())`
@@ -46,19 +63,19 @@ a fixed `.height(rowHeightDp)` and use `Canvas(Modifier.width(dotSize).fillMaxHe
 ## Screen Status
 
 ### HomeScreen (`HomeScreen.kt`)
-- **Status**: Working, tested on device.
+- **Status**: Working, tested on device. Drag selection working and persistent.
 - **Circle size**: 250.dp
 - **Gradient**: `Color(0xFF808080)` → `appBackground`, 200.dp height at top of screen
-- **Drag**: accumulation fix applied (`accumulatedDrag` state, reset on drag end)
-- **Known issues**: none outstanding after last fix
+- **Drag**: `rememberUpdatedState` fix applied; `onDragStart = markDragStart()`
+- **Known issues**: none
 
 ### TripListScreen (`TripListScreen.kt`)
-- **Status**: Built; column alignment and drag fix applied in latest session (untested).
-- **Drag fix**: single `awaitEachGesture` in Column pointerInput handles both tap routing
-  and drag; removed `detectTapGestures` from `TripRow`
-- **Alignment fix**: `TripRow` now `fillMaxWidth()` with `Arrangement.SpaceBetween`;
-  rows span full width with `padding(horizontal = 16.dp)` on the Column
-- **To verify**: drag changes selected trip; tapping a row navigates to TripDetail
+- **Status**: Working, tested on device. Drag selection working and persistent.
+- **Drag fix**: single `awaitEachGesture` + `rememberUpdatedState`; `markDragStart()`
+  on touchSlop; `pointerInput(trips.size)` key prevents mid-drag restart
+- **Alignment**: `TripRow` `fillMaxWidth()`, `Arrangement.SpaceBetween`,
+  `padding(horizontal = 16.dp)` on Column
+- **To verify**: tapping a row navigates to TripDetail (tap routing exists, unconfirmed)
 
 ### TripDetailScreen (`TripDetailScreen.kt`)
 - **Status**: Built; connecting line and title centering applied in latest session (untested).
@@ -104,8 +121,8 @@ build.sh / run.sh / test.sh
 
 ## Testing Order for Next Session
 
-1. `TripListScreen` — drag to scroll trips, tap to open detail
-2. `TripDetailScreen` — connecting line, centered title, correct dot colors
+1. `TripListScreen` — tap a row to open TripDetail (drag confirmed working)
+2. `TripDetailScreen` — connecting line, centered title, correct dot colors (visually confirmed; verify on more trips)
 3. `StationSelectionScreen` — select stations, save, confirm persistence after restart
 4. Light mode pass on all screens
 
