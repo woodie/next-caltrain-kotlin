@@ -1,8 +1,9 @@
 package com.netpress.nextcaltrain
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -10,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.netpress.nextcaltrain.ui.theme.AppStyle
 import com.netpress.nextcaltrain.ui.theme.LocalAppColors
@@ -28,8 +28,7 @@ fun AboutScreen(
     val colors = LocalAppColors.current
 
     val scheduleDateText = scheduleDate?.let {
-        val date = Date(it)
-        SimpleDateFormat("MMM d yyyy", Locale.US).format(date)
+        SimpleDateFormat("MMM d yyyy", Locale.US).format(Date(it))
     } ?: "Unknown"
 
     Box(
@@ -39,23 +38,19 @@ fun AboutScreen(
     ) {
         // Toolbar — back button (hidden when loading)
         if (!isLoading && onBack != null) {
-            Box(
+            IconButton(
+                onClick = onBack,
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(top = 8.dp)
+                    .size(AppStyle.iconButtonSizeDp.dp)
+                    .clip(CircleShape),
             ) {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier
-                        .size(AppStyle.iconButtonSizeDp.dp)
-                        .clip(CircleShape)
-                ) {
-                    Icon(
-                        painter = painterResource(id = android.R.drawable.ic_media_previous),
-                        contentDescription = "Back",
-                        tint = colors.appText,
-                    )
-                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = colors.appText,
+                )
             }
         }
 
@@ -65,13 +60,6 @@ fun AboutScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            // App icon
-            Image(
-                painter = painterResource(id = R.mipmap.ic_launcher),
-                contentDescription = "Next Caltrain icon",
-                modifier = Modifier.size(96.dp),
-            )
-
             Text(
                 text = "Next Caltrain",
                 fontSize = AppStyle.fontBlurb,
