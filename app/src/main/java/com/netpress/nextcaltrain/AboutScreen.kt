@@ -1,5 +1,6 @@
 package com.netpress.nextcaltrain
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -11,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.netpress.nextcaltrain.ui.theme.AppStyle
 import com.netpress.nextcaltrain.ui.theme.LocalAppColors
@@ -60,6 +62,14 @@ fun AboutScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_nextcaltrain),
+                contentDescription = "Next Caltrain icon",
+                modifier = Modifier
+                    .size(96.dp)
+                    .clip(CircleShape),
+            )
+
             Text(
                 text = "Next Caltrain",
                 fontSize = AppStyle.fontBlurb,
