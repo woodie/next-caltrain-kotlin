@@ -87,11 +87,14 @@ a fixed `.height(rowHeightDp)` and use `Canvas(Modifier.width(dotSize).fillMaxHe
 - **To verify**: line is continuous between all stops; title is centered; correct dot colors
 
 ### StationSelectionScreen (`StationSelectionScreen.kt`)
-- **Status**: Built; NOT yet tested on device.
+- **Status**: Working, tested on device.
 - **Layout**: portrait = stacked Column; landscape = side-by-side Row (via `LocalConfiguration`)
 - **Scroll**: `LazyColumn` with `rememberLazyListState` + `animateScrollToItem` to selected
 - **Save**: `AlertDialog` confirmation; checkmark button only shown when `!isAlreadyDefault`
-- **To verify**: morning/evening lists scroll to selected station; save persists across app restart
+- **Item layout**: `itemsIndexed` with `Divider` between rows (full-width, `calSwapped` at 40% alpha);
+  each row has `padding(start = 91.dp)` (≈250px) so items are left-aligned with consistent indent;
+  checkmark in a `32.dp` Box to the left of the station name
+- **Known issues**: none
 
 ### AboutScreen (`AboutScreen.kt`)
 - **Status**: Working, tested on device.
@@ -121,10 +124,10 @@ build.sh / run.sh / test.sh
 
 ## Testing Order for Next Session
 
-1. `TripListScreen` — tap a row to open TripDetail (drag confirmed working)
-2. `TripDetailScreen` — connecting line, centered title, correct dot colors (visually confirmed; verify on more trips)
-3. `StationSelectionScreen` — select stations, save, confirm persistence after restart
-4. Light mode pass on all screens
+1. `TripListScreen` — tap a row to open TripDetail (drag confirmed working; tap routing unconfirmed)
+2. `TripDetailScreen` — verify connecting line, centered title, correct dot colors on various trips
+3. Light mode pass on all screens
+4. Play Store screenshots
 
 ## Play Store
 
