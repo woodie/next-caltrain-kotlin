@@ -1,6 +1,7 @@
 package com.netpress.nextcaltrain
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -36,6 +37,7 @@ fun AboutScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(colors.appBackground)
             .padding(horizontal = 16.dp),
     ) {
         // Toolbar — back button (hidden when loading)
@@ -47,7 +49,8 @@ fun AboutScreen(
                     .statusBarsPadding()
                     .padding(top = 8.dp)
                     .size(AppStyle.iconButtonSizeDp.dp)
-                    .clip(CircleShape),
+                    .clip(CircleShape)
+                    .background(colors.iconCircleBackground),
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
