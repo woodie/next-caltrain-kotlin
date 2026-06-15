@@ -206,37 +206,43 @@ private fun StationList(
             )
         }
 
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            itemsIndexed(stations) { index, station ->
-                if (index > 0) {
-                    Divider(color = colors.calSwapped.copy(alpha = 0.4f))
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .pointerInput(station) { detectTapGestures { onSelect(station) } }
-                        .padding(start = 91.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
-                        if (station == selected) {
-                            Icon(
-                                Icons.Filled.Check,
-                                contentDescription = null,
-                                tint = colors.calArrive,
-                                modifier = Modifier.size(18.dp),
-                            )
-                        }
+        // BoxWithConstraints lets us compute start padding relative to the panel width
+        // so portrait (~360dp → ~96dp) and landscape panels (~400dp → ~116dp) both
+        // center the content block correctly, with a +16dp rightward bias.
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val startPad = ((maxWidth - 200.dp) / 2 + 8.dp).coerceAtLeast(8.dp)
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                itemsIndexed(stations) { index, station ->
+                    if (index > 0) {
+                        Divider(color = colors.calSwapped.copy(alpha = 0.4f))
                     }
-                    Text(
-                        text = station,
-                        fontSize = AppStyle.fontOrigin,
-                        color = colors.appText,
-                        softWrap = false,
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .pointerInput(station) { detectTapGestures { onSelect(station) } }
+                            .padding(start = startPad, end = 16.dp, top = 10.dp, bottom = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
+                            if (station == selected) {
+                                Icon(
+                                    Icons.Filled.Check,
+                                    contentDescription = null,
+                                    tint = colors.calArrive,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+                        }
+                        Text(
+                            text = station,
+                            fontSize = AppStyle.fontOrigin,
+                            color = colors.appText,
+                            softWrap = false,
+                        )
+                    }
                 }
             }
         }

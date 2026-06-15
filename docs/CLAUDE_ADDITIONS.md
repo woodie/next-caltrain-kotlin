@@ -60,6 +60,33 @@ cancelled mid-drag by an offset change.
 a fixed `.height(rowHeightDp)` and use `Canvas(Modifier.width(dotSize).fillMaxHeight())`
 — Canvas then gets an explicit height and the line fills correctly.
 
+### Ragged-Right Centering Pattern
+Several screens display a content block where the left side is uniform (times, checkmarks)
+and the right side is ragged (station names of varying length). The goal is to center the
+block visually, with a slight rightward bias so the ragged right edge sits close to the
+screen edge rather than leaving dead space.
+
+**For fixed-layout screens (TripDetailScreen):**
+1. Outer `Column` uses `horizontalAlignment = Alignment.CenterHorizontally`.
+2. Inner `Column` wraps all rows with `Modifier.padding(start = N.dp)` — this biases the
+   centered block rightward. A positive start pad shifts the block right of true center.
+3. Each `StopRow` is naturally sized (no `fillMaxWidth`), so the inner Column shrinks to
+   the widest row. All rows start from the same left edge → dots/checkmarks stay aligned.
+4. Station name `Text` uses `softWrap = false, overflow = TextOverflow.Visible` — do NOT
+   use `overflow = Ellipsis` here, as that causes `IntrinsicSize.Min` to collapse to zero.
+
+**For `LazyColumn` screens (StationSelectionScreen):**
+`LazyColumn` doesn't support `horizontalAlignment`, so use `BoxWithConstraints` to read
+the actual panel width, then compute a dynamic start padding:
+```kotlin
+BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    val startPad = ((maxWidth - 200.dp) / 2 + 8.dp).coerceAtLeast(8.dp)
+    LazyColumn(...) { ... }
+}
+```
+`200.dp` is the nominal content block width (checkmark box + longest station name).
+This self-adjusts for portrait vs landscape panels without any hardcoded breakpoints.
+
 ## Screen Status
 
 ### HomeScreen (`HomeScreen.kt`)
@@ -78,26 +105,29 @@ a fixed `.height(rowHeightDp)` and use `Canvas(Modifier.width(dotSize).fillMaxHe
 - **To verify**: tapping a row navigates to TripDetail (tap routing exists, unconfirmed)
 
 ### TripDetailScreen (`TripDetailScreen.kt`)
-- **Status**: Built; connecting line and title centering applied in latest session (untested).
+- **Status**: Working, tested on device. Layout matches iOS.
 - **Title**: centered (back button + weight spacer + title + weight spacer + balance spacer)
-- **Track line**: Canvas with fixed `rowHeightDp = 48.dp`; draws line above/below dot
-  using `isFirst`/`isLast` flags; dot drawn at `dotOffsetYDp + dotR` from row top
-- **Text**: always `colors.appText` (white) — iOS screenshot showing blue text is wrong
+- **Track line**: Canvas with fixed `rowHeightDp = 30.dp`; `dotSizeDp = 16.dp`;
+  `dotOffsetYDp = 7.dp` ((30-16)/2); draws line above/below dot using `isFirst`/`isLast` flags
+- **Alignment**: ragged-right centering pattern (see Architecture Decisions above);
+  `padding(start = 16.dp)` on inner Column biases block rightward
+- **Text**: always `colors.appText` (white); station names use `TextOverflow.Visible`
 - **Dot colors**: ORIGIN/DESTINATION/TRANSFER = white; PAST = calPast; FUTURE = calArrive
-- **To verify**: line is continuous between all stops; title is centered; correct dot colors
+- **Known issues**: none
 
 ### StationSelectionScreen (`StationSelectionScreen.kt`)
 - **Status**: Working, tested on device.
 - **Layout**: portrait = stacked Column; landscape = side-by-side Row (via `LocalConfiguration`)
 - **Scroll**: `LazyColumn` with `rememberLazyListState` + `animateScrollToItem` to selected
 - **Save**: `AlertDialog` confirmation; checkmark button only shown when `!isAlreadyDefault`
-- **Item layout**: `itemsIndexed` with `Divider` between rows (full-width, `calSwapped` at 40% alpha);
-  each row has `padding(start = 91.dp)` (≈250px) so items are left-aligned with consistent indent;
-  checkmark in a `32.dp` Box to the left of the station name
+- **Item layout**: `BoxWithConstraints` dynamic start padding `(maxWidth - 200.dp) / 2 + 8.dp`;
+  checkmark in a `32.dp` Box to the left of the station name; self-adjusts portrait vs landscape
 - **Known issues**: none
 
 ### AboutScreen (`AboutScreen.kt`)
 - **Status**: Working, tested on device.
+- **Back button**: visible when `!isLoading && onBack != null`; hidden on LoadingScreen (onBack=null)
+- **Background**: Box has `background(colors.appBackground)`; button has `background(colors.iconCircleBackground)`
 - **Known issues**: none
 
 ## Files of Interest
@@ -124,10 +154,8 @@ build.sh / run.sh / test.sh
 
 ## Testing Order for Next Session
 
-1. `TripListScreen` — tap a row to open TripDetail (drag confirmed working; tap routing unconfirmed)
-2. `TripDetailScreen` — verify connecting line, centered title, correct dot colors on various trips
-3. Light mode pass on all screens
-4. Play Store screenshots
+1. Light mode pass on all screens
+2. Play Store screenshots
 
 ## Play Store
 
