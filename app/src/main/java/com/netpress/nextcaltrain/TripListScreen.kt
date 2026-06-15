@@ -209,14 +209,18 @@ fun TripListScreen(
             }
 
             // ── Trip rows ────────────────────────────────────────────────────
+            // rememberUpdatedState gives the lambda a live reference to offset/trips
+            // without restarting the coroutine on every recomposition.
+            val latestOffset = rememberUpdatedState(offset)
+            val latestTrips = rememberUpdatedState(trips)
+
             // Single pointerInput handles both drag and tap to avoid child gesture conflict.
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    // Key is trips.size only (not offset) so the gesture handler is never
-                    // restarted mid-drag when the timer or vm.setOffset() updates offset.
-                    // We read `offset` and `trips` live via State delegation inside the lambda.
+                    // Key is trips.size only (not offset) — prevents restarting mid-drag
+                    // when the timer or vm.setOffset() updates offset.
                     .pointerInput(trips.size) {
                         awaitEachGesture {
                             val down = awaitFirstDown(requireUnconsumed = false)
@@ -231,29 +235,33 @@ fun TripListScreen(
 
                                 if (!isDragging && abs(totalDragY) > viewConfiguration.touchSlop) {
                                     isDragging = true
-                                    // Mark immediately so the 1-second timer doesn't reset
-                                    // offset (and therefore this coroutine's key) mid-drag.
+                                    // Mark immediately so the 1-second timer can't reset
+                                    // offset mid-drag (which would shift the drag baseline).
                                     vm.markDragStart()
                                 }
                                 if (isDragging) {
                                     change.consume()
                                     accumulatedDrag = totalDragY
                                     val newShift = -(accumulatedDrag / rowHeightPx).toInt()
-                                    val proposed = offset + newShift
-                                    if (proposed >= 0 && proposed < trips.size) {
+                                    val proposed = latestOffset.value + newShift
+                                    if (proposed >= 0 && proposed < latestTrips.value.size) {
                                         dragShift = newShift
                                     }
                                 }
                             } while (event.changes.any { it.pressed })
 
                             if (isDragging) {
-                                vm.setOffset(effectiveOffset)
+                                // Use latestOffset.value (live) not captured `effectiveOffset`
+                                // (stale Int from composition time) to avoid snapping back.
+                                val finalOffset = (latestOffset.value + dragShift)
+                                    .coerceIn(0, maxOf(latestTrips.value.size - 1, 0))
+                                vm.setOffset(finalOffset)
                                 dragShift = 0
                                 accumulatedDrag = 0f
                             } else {
                                 // Tap — find which row and navigate
                                 val slot = (down.position.y / rowHeightPx).toInt()
-                                val tapped = trips.getOrNull(effectiveOffset + slot)
+                                val tapped = latestTrips.value.getOrNull(latestOffset.value + slot)
                                 if (tapped != null) {
                                     vm.selectTripForDetail(tapped)
                                     onNavigateToTripDetail()

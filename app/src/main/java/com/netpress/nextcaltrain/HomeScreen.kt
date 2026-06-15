@@ -45,6 +45,11 @@ fun HomeScreen(
     var accumulatedDrag by remember { mutableFloatStateOf(0f) }
     val rowHeight = 44f
 
+    // Live references so the pointerInput lambda (key=Unit, never restarts) always
+    // reads the current offset/trips instead of the stale Int captured at creation time.
+    val latestOffset = rememberUpdatedState(offset)
+    val latestTrips = rememberUpdatedState(trips)
+
     val effectiveOffset = (offset + dragShift).coerceIn(0, maxOf(trips.size - 1, 0))
     val selectedTrip = trips.getOrNull(effectiveOffset)
     val noTrains = trips.isEmpty()
@@ -84,14 +89,17 @@ fun HomeScreen(
             }
             .pointerInput(Unit) {
                 detectDragGestures(
+                    onDragStart = { vm.markDragStart() },
                     onDrag = { _, dragAmount ->
                         accumulatedDrag += dragAmount.y
                         val newShift = -(accumulatedDrag / rowHeight).toInt()
-                        val proposed = offset + newShift
-                        if (proposed >= 0 && proposed < trips.size) dragShift = newShift
+                        val proposed = latestOffset.value + newShift
+                        if (proposed >= 0 && proposed < latestTrips.value.size) dragShift = newShift
                     },
                     onDragEnd = {
-                        vm.setOffset(effectiveOffset)
+                        val finalOffset = (latestOffset.value + dragShift)
+                            .coerceIn(0, maxOf(latestTrips.value.size - 1, 0))
+                        vm.setOffset(finalOffset)
                         dragShift = 0
                         accumulatedDrag = 0f
                     }
