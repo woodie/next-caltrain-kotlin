@@ -228,20 +228,24 @@ private fun StopRow(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        // Station name (+ optional transfer label)
-        Column(modifier = Modifier.padding(top = dotOffsetYDp)) {
+        // Station name (+ optional transfer label) — weight(1f) constrains width so text never wraps
+        Column(modifier = Modifier.weight(1f).padding(top = dotOffsetYDp)) {
             Text(
                 text = stop.station,
                 fontSize = AppStyle.fontTrain,
                 color = colors.appText,
+                maxLines = 1,
                 softWrap = false,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             )
             if (stop.transferLabel != null) {
                 Text(
                     text = stop.transferLabel,
                     fontSize = (AppStyle.fontOrigin.value - 2).sp,
                     color = colors.calSwapped,
+                    maxLines = 1,
                     softWrap = false,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 )
             }
         }
