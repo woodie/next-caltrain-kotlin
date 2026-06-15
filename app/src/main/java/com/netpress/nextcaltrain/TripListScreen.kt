@@ -223,7 +223,7 @@ fun TripListScreen(
                             do {
                                 val event = awaitPointerEvent()
                                 val change = event.changes.firstOrNull() ?: break
-                                val dy = change.positionChange().y
+                                val dy = change.position.y - change.previousPosition.y
                                 totalDragY += dy
 
                                 if (!isDragging && abs(totalDragY) > viewConfiguration.touchSlop) {
