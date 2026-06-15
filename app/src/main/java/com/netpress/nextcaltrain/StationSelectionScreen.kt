@@ -214,33 +214,29 @@ private fun StationList(
                 if (index > 0) {
                     Divider(color = colors.calSwapped.copy(alpha = 0.4f))
                 }
-                // Full-width tap target; inner Row is wrap-content and centered —
-                // so text is left-aligned within its block, but the block is centered.
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .pointerInput(station) { detectTapGestures { onSelect(station) } }
-                        .padding(vertical = 10.dp),
-                    contentAlignment = Alignment.Center,
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
-                            if (station == selected) {
-                                Icon(
-                                    Icons.Filled.Check,
-                                    contentDescription = null,
-                                    tint = colors.calArrive,
-                                    modifier = Modifier.size(18.dp),
-                                )
-                            }
+                    Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
+                        if (station == selected) {
+                            Icon(
+                                Icons.Filled.Check,
+                                contentDescription = null,
+                                tint = colors.calArrive,
+                                modifier = Modifier.size(18.dp),
+                            )
                         }
-                        Text(
-                            text = station,
-                            fontSize = AppStyle.fontOrigin,
-                            color = colors.appText,
-                            softWrap = false,
-                        )
                     }
+                    Text(
+                        text = station,
+                        fontSize = AppStyle.fontOrigin,
+                        color = colors.appText,
+                        softWrap = false,
+                    )
                 }
             }
         }
