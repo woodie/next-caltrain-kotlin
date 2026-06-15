@@ -136,8 +136,9 @@ class TripViewModel(val schedule: Schedule, private val context: Context) : View
         val stations = schedule.southStops
         val stopAM = prefs.getInt(KEY_STOP_AM, DEFAULT_STOP_AM).coerceIn(0, stations.size - 1)
         val stopPM = prefs.getInt(KEY_STOP_PM, DEFAULT_STOP_PM).coerceIn(0, stations.size - 1)
-        val savedMorning = if (isFlipped) stations[stopPM] else stations[stopAM]
-        val savedEvening = if (isFlipped) stations[stopAM] else stations[stopPM]
+        // morningStation/eveningStation are already flip-aware; just compare to raw AM/PM prefs
+        val savedMorning = stations[stopAM]
+        val savedEvening = stations[stopPM]
         return morningStation == savedMorning && eveningStation == savedEvening
     }
 
