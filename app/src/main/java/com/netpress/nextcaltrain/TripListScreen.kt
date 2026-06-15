@@ -244,7 +244,9 @@ fun TripListScreen(
                                     accumulatedDrag = totalDragY
                                     val newShift = -(accumulatedDrag / rowHeightPx).toInt()
                                     val proposed = latestOffset.value + newShift
-                                    if (proposed >= 0 && proposed < latestTrips.value.size) {
+                                    // Only write State when value changes — avoids a recomposition
+                                    // on every pointer event (60-120/sec) when still in same row.
+                                    if (proposed >= 0 && proposed < latestTrips.value.size && newShift != dragShift) {
                                         dragShift = newShift
                                     }
                                 }

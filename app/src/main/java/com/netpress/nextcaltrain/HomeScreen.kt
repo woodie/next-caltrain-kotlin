@@ -94,7 +94,10 @@ fun HomeScreen(
                         accumulatedDrag += dragAmount.y
                         val newShift = -(accumulatedDrag / rowHeight).toInt()
                         val proposed = latestOffset.value + newShift
-                        if (proposed >= 0 && proposed < latestTrips.value.size) dragShift = newShift
+                        // Only write State when value changes to avoid excess recompositions.
+                        if (proposed >= 0 && proposed < latestTrips.value.size && newShift != dragShift) {
+                            dragShift = newShift
+                        }
                     },
                     onDragEnd = {
                         val finalOffset = (latestOffset.value + dragShift)
