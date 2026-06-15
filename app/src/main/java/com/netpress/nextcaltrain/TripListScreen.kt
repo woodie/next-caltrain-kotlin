@@ -214,7 +214,10 @@ fun TripListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .pointerInput(trips.size, offset) {
+                    // Key is trips.size only (not offset) so the gesture handler is never
+                    // restarted mid-drag when the timer or vm.setOffset() updates offset.
+                    // We read `offset` and `trips` live via State delegation inside the lambda.
+                    .pointerInput(trips.size) {
                         awaitEachGesture {
                             val down = awaitFirstDown(requireUnconsumed = false)
                             var totalDragY = 0f
@@ -228,6 +231,9 @@ fun TripListScreen(
 
                                 if (!isDragging && abs(totalDragY) > viewConfiguration.touchSlop) {
                                     isDragging = true
+                                    // Mark immediately so the 1-second timer doesn't reset
+                                    // offset (and therefore this coroutine's key) mid-drag.
+                                    vm.markDragStart()
                                 }
                                 if (isDragging) {
                                     change.consume()

@@ -172,6 +172,12 @@ class TripViewModel(val schedule: Schedule, private val context: Context) : View
         _offset.value = clampedOffset(ni)
     }
 
+    fun markDragStart() {
+        // Called as soon as drag is detected — prevents the 1-second timer from
+        // resetting offset mid-drag, which would restart the gesture handler.
+        userSelected = true
+    }
+
     fun setOffset(newOffset: Int) {
         userSelected = true
         _offset.value = newOffset
