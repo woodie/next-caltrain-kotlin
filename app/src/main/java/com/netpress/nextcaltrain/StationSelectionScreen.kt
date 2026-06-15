@@ -218,7 +218,7 @@ private fun StationList(
                     modifier = Modifier
                         .fillMaxWidth()
                         .pointerInput(station) { detectTapGestures { onSelect(station) } }
-                        .padding(start = 73.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
+                        .padding(start = 91.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
