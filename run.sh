@@ -22,6 +22,7 @@ if $FRESH; then
   $ADB shell pm clear $PKG
 fi
 
+$ADB shell am force-stop $PKG
 $ADB shell am start -n $ACTIVITY
 
 if $LOG; then
