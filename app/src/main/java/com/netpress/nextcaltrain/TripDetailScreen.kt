@@ -127,28 +127,32 @@ fun TripDetailScreen(
             Spacer(modifier = Modifier.size(AppStyle.iconButtonSizeDp.dp))
         }
 
-        // Stop list
+        // Stop list — centered as a block; end padding biases position so station names
+        // have more breathing room on the right (ragged right edge closer to screen edge).
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(top = 8.dp, bottom = 24.dp)
+                .padding(top = 8.dp, bottom = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            stops.forEachIndexed { index, stop ->
-                // Line colors are time-based (not role-based) so origin/destination dots
-                // show white while their segment colors still reflect past/future travel.
-                val stopLineColor = if (goodTimes.inThePast(stop.time)) colors.calPast else colors.calArrive
-                val nextTrackColor = stops.getOrNull(index + 1)?.let { next ->
-                    if (goodTimes.inThePast(next.time)) colors.calPast else colors.calArrive
-                } ?: colors.calArrive
-                StopRow(
-                    stop = stop,
-                    isFirst = index == 0,
-                    isLast = index == stops.size - 1,
-                    lineColor = stopLineColor,
-                    nextTrackColor = nextTrackColor,
-                    colors = colors,
-                )
+            Column(modifier = Modifier.padding(start = 16.dp)) {
+                stops.forEachIndexed { index, stop ->
+                    // Line colors are time-based (not role-based) so origin/destination dots
+                    // show white while their segment colors still reflect past/future travel.
+                    val stopLineColor = if (goodTimes.inThePast(stop.time)) colors.calPast else colors.calArrive
+                    val nextTrackColor = stops.getOrNull(index + 1)?.let { next ->
+                        if (goodTimes.inThePast(next.time)) colors.calPast else colors.calArrive
+                    } ?: colors.calArrive
+                    StopRow(
+                        stop = stop,
+                        isFirst = index == 0,
+                        isLast = index == stops.size - 1,
+                        lineColor = stopLineColor,
+                        nextTrackColor = nextTrackColor,
+                        colors = colors,
+                    )
+                }
             }
         }
     }
@@ -168,16 +172,13 @@ private fun StopRow(
         StopRole.ORIGIN, StopRole.DESTINATION, StopRole.TRANSFER -> colors.appText
         else -> lineColor
     }
-    val dotSizeDp = 14.dp
-    val dotOffsetYDp = 17.dp  // centers dot in the 48dp row: (48-14)/2 = 17
-    val textOffsetYDp = 4.dp
-    val rowHeightDp = 48.dp
+    val dotSizeDp = 16.dp
+    val dotOffsetYDp = 7.dp   // centers dot in the 30dp row: (30-16)/2 = 7
+    val textOffsetYDp = 2.dp
+    val rowHeightDp = 30.dp
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(rowHeightDp)
-            .padding(start = 32.dp, end = 16.dp),  // extra left padding shifts content right
+        modifier = Modifier.height(rowHeightDp),
         verticalAlignment = Alignment.Top,
     ) {
         // Time — right-aligned in fixed-width column (80dp to avoid clipping "10:15am")
@@ -233,15 +234,14 @@ private fun StopRow(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        // Station name (+ optional transfer label) — weight(1f) constrains width so text never wraps
-        Column(modifier = Modifier.weight(1f).padding(top = textOffsetYDp)) {
+        // Station name (+ optional transfer label) — natural width, visible overflow
+        Column(modifier = Modifier.padding(top = textOffsetYDp)) {
             Text(
                 text = stop.station,
                 fontSize = AppStyle.fontTrain,
                 color = colors.appText,
-                maxLines = 1,
                 softWrap = false,
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Visible,
             )
             if (stop.transferLabel != null) {
                 Text(
