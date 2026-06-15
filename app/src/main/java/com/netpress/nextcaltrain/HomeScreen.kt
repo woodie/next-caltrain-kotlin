@@ -150,6 +150,7 @@ fun HomeScreen(
                 ) {
                     Icon(Icons.Filled.Refresh, contentDescription = "Reset", tint = colors.appText)
                 }
+                Spacer(modifier = Modifier.width(8.dp))
             }
             IconButton(
                 onClick = { vm.swapStations() },
