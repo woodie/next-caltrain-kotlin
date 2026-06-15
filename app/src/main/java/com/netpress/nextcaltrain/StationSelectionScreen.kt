@@ -208,7 +208,7 @@ private fun StationList(
 
         LazyColumn(
             state = listState,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().padding(start = 36.dp),
         ) {
             itemsIndexed(stations) { index, station ->
                 if (index > 0) {
