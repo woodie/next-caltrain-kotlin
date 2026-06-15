@@ -44,6 +44,7 @@ fun AboutScreen(
                 onClick = onBack,
                 modifier = Modifier
                     .align(Alignment.TopStart)
+                    .statusBarsPadding()
                     .padding(top = 8.dp)
                     .size(AppStyle.iconButtonSizeDp.dp)
                     .clip(CircleShape),

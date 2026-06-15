@@ -6,6 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.netpress.nextcaltrain.ui.theme.NextCaltrainTheme
 import kotlinx.coroutines.*
 
@@ -40,7 +44,6 @@ fun NextCaltrainApp() {
     LaunchedEffect(Unit) {
         val cached = Schedule.loadCached(context)
         loadState = if (cached == null) {
-            // No cache — block on network
             try {
                 val schedule = Schedule.fetchFromNetwork(context)
                 LoadState.Ready(schedule)
@@ -48,7 +51,6 @@ fun NextCaltrainApp() {
                 LoadState.Error
             }
         } else {
-            // Cache exists — race network against 10s timeout
             try {
                 withTimeout(10_000L) {
                     val schedule = Schedule.fetchFromNetwork(context)
@@ -63,6 +65,50 @@ fun NextCaltrainApp() {
     when (val state = loadState) {
         is LoadState.Loading -> LoadingScreen(message = "Loading schedule data")
         is LoadState.Error   -> LoadingScreen(message = "Unable to load schedule")
-        is LoadState.Ready   -> HomeScreen(schedule = state.schedule)
+        is LoadState.Ready   -> {
+            val vm: TripViewModel = viewModel(
+                factory = TripViewModelFactory(state.schedule, context)
+            )
+            val navController = rememberNavController()
+
+            NavHost(navController = navController, startDestination = "home") {
+                composable("home") {
+                    HomeScreen(
+                        vm = vm,
+                        onNavigateToTripList = { navController.navigate("tripList") },
+                        onNavigateToAbout = { navController.navigate("about") },
+                        onNavigateToStationSelection = { navController.navigate("stationSelection") },
+                    )
+                }
+                composable("tripList") {
+                    TripListScreen(
+                        vm = vm,
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToTripDetail = { navController.navigate("tripDetail") },
+                        onNavigateToStationSelection = { navController.navigate("stationSelection") },
+                    )
+                }
+                composable("tripDetail") {
+                    TripDetailScreen(
+                        vm = vm,
+                        onNavigateBack = { navController.popBackStack() },
+                    )
+                }
+                composable("stationSelection") {
+                    StationSelectionScreen(
+                        vm = vm,
+                        onNavigateBack = { navController.popBackStack() },
+                    )
+                }
+                composable("about") {
+                    AboutScreen(
+                        scheduleDate = state.schedule.scheduleDate,
+                        isLoading = false,
+                        loadFailed = false,
+                        onBack = { navController.popBackStack() },
+                    )
+                }
+            }
+        }
     }
 }

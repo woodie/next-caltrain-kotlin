@@ -23,19 +23,17 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.netpress.nextcaltrain.ui.theme.AppStyle
 import com.netpress.nextcaltrain.ui.theme.LocalAppColors
 import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(
-    schedule: Schedule,
+    vm: TripViewModel,
     onNavigateToTripList: (() -> Unit)? = null,
     onNavigateToAbout: (() -> Unit)? = null,
     onNavigateToStationSelection: (() -> Unit)? = null,
 ) {
-    val vm: TripViewModel = viewModel(factory = TripViewModelFactory(schedule))
     val trips by vm.trips.collectAsStateWithLifecycle()
     val offset by vm.offset.collectAsStateWithLifecycle()
     val goodTimes by vm.goodTimes.collectAsStateWithLifecycle()
@@ -44,6 +42,7 @@ fun HomeScreen(
 
     var blinkOn by remember { mutableStateOf(true) }
     var dragShift by remember { mutableIntStateOf(0) }
+    var accumulatedDrag by remember { mutableFloatStateOf(0f) }
     val rowHeight = 44f
 
     val effectiveOffset = (offset + dragShift).coerceIn(0, maxOf(trips.size - 1, 0))
@@ -86,13 +85,15 @@ fun HomeScreen(
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDrag = { _, dragAmount ->
-                        val newShift = -(dragAmount.y / rowHeight).toInt()
+                        accumulatedDrag += dragAmount.y
+                        val newShift = -(accumulatedDrag / rowHeight).toInt()
                         val proposed = offset + newShift
                         if (proposed >= 0 && proposed < trips.size) dragShift = newShift
                     },
                     onDragEnd = {
                         vm.setOffset(effectiveOffset)
                         dragShift = 0
+                        accumulatedDrag = 0f
                     }
                 )
             }
@@ -153,7 +154,7 @@ fun HomeScreen(
         // Ring — decorative only, centered on full screen
         Canvas(
             modifier = Modifier
-                .size(230.dp)
+                .size(250.dp)
                 .align(Alignment.Center)
         ) {
             drawCircle(

@@ -1,5 +1,6 @@
 package com.netpress.nextcaltrain
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
@@ -8,11 +9,24 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
-class TripViewModel(val schedule: Schedule) : ViewModel() {
+data class TripDetailState(
+    val trip: Trip,
+    val origin: String,
+    val destination: String,
+    val scheduleType: ScheduleType,
+)
+
+class TripViewModel(val schedule: Schedule, private val context: Context) : ViewModel() {
 
     companion object {
         const val dayMinutes = 1440
+        private const val PREFS_NAME = "nextcaltrain"
+        private const val KEY_STOP_AM = "stopAM"
+        private const val KEY_STOP_PM = "stopPM"
+        private const val DEFAULT_STOP_AM = 15
+        private const val DEFAULT_STOP_PM = 0
     }
 
     // MARK: - Published state
@@ -38,21 +52,49 @@ class TripViewModel(val schedule: Schedule) : ViewModel() {
     private val _goodTimes = MutableStateFlow(GoodTimes())
     val goodTimes: StateFlow<GoodTimes> = _goodTimes.asStateFlow()
 
+    private val _tripDetailState = MutableStateFlow<TripDetailState?>(null)
+    val tripDetailState: StateFlow<TripDetailState?> = _tripDetailState.asStateFlow()
+
     private var userSelected = false
     val hasManualSelection: Boolean get() = userSelected
 
     private val service = CaltrainService(schedule)
     private var timerJob: Job? = null
 
+    // MARK: - Init
+
     init {
         val gt = GoodTimes()
         _goodTimes.value = gt
         _scheduleType.value = CaltrainSchedule.forToday(gt, schedule.specialDates)
+
+        // Load saved stations from SharedPreferences
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val stations = schedule.southStops
+        val stopAM = prefs.getInt(KEY_STOP_AM, DEFAULT_STOP_AM).coerceIn(0, stations.size - 1)
+        val stopPM = prefs.getInt(KEY_STOP_PM, DEFAULT_STOP_PM).coerceIn(0, stations.size - 1)
+        if (isFlipped) {
+            _origin.value = stations[stopPM]
+            _destination.value = stations[stopAM]
+        } else {
+            _origin.value = stations[stopAM]
+            _destination.value = stations[stopPM]
+        }
+
         refresh()
         startTimer()
     }
 
     // MARK: - Computed
+
+    val isFlipped: Boolean
+        get() = Calendar.getInstance().get(Calendar.HOUR_OF_DAY) >= 12
+
+    val morningStation: String
+        get() = if (isFlipped) _destination.value else _origin.value
+
+    val eveningStation: String
+        get() = if (isFlipped) _origin.value else _destination.value
 
     val swapped: Boolean
         get() {
@@ -89,7 +131,27 @@ class TripViewModel(val schedule: Schedule) : ViewModel() {
             return if (dir == "South") schedule.southStops else schedule.southStops.reversed()
         }
 
+    fun isAlreadyDefaultStops(): Boolean {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val stations = schedule.southStops
+        val stopAM = prefs.getInt(KEY_STOP_AM, DEFAULT_STOP_AM).coerceIn(0, stations.size - 1)
+        val stopPM = prefs.getInt(KEY_STOP_PM, DEFAULT_STOP_PM).coerceIn(0, stations.size - 1)
+        val savedMorning = if (isFlipped) stations[stopPM] else stations[stopAM]
+        val savedEvening = if (isFlipped) stations[stopAM] else stations[stopPM]
+        return morningStation == savedMorning && eveningStation == savedEvening
+    }
+
     // MARK: - Actions
+
+    fun setMorningStation(station: String) {
+        if (isFlipped) _destination.value = station else _origin.value = station
+        refresh()
+    }
+
+    fun setEveningStation(station: String) {
+        if (isFlipped) _origin.value = station else _destination.value = station
+        refresh()
+    }
 
     fun setOrigin(value: String) {
         _origin.value = value
@@ -134,6 +196,35 @@ class TripViewModel(val schedule: Schedule) : ViewModel() {
         val tmp = _origin.value
         _origin.value = _destination.value
         _destination.value = tmp
+        saveStops()
+        refresh()
+    }
+
+    fun saveStops() {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val stations = schedule.southStops
+        val amStation = if (isFlipped) _destination.value else _origin.value
+        val pmStation = if (isFlipped) _origin.value else _destination.value
+        val amIdx = stations.indexOf(amStation)
+        val pmIdx = stations.indexOf(pmStation)
+        prefs.edit().apply {
+            if (amIdx >= 0) putInt(KEY_STOP_AM, amIdx)
+            if (pmIdx >= 0) putInt(KEY_STOP_PM, pmIdx)
+        }.apply()
+    }
+
+    fun restoreDefaultStops() {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val stations = schedule.southStops
+        val stopAM = prefs.getInt(KEY_STOP_AM, DEFAULT_STOP_AM).coerceIn(0, stations.size - 1)
+        val stopPM = prefs.getInt(KEY_STOP_PM, DEFAULT_STOP_PM).coerceIn(0, stations.size - 1)
+        if (isFlipped) {
+            _origin.value = stations[stopPM]
+            _destination.value = stations[stopAM]
+        } else {
+            _origin.value = stations[stopAM]
+            _destination.value = stations[stopPM]
+        }
         refresh()
     }
 
@@ -141,6 +232,15 @@ class TripViewModel(val schedule: Schedule) : ViewModel() {
         val next = (_scheduleType.value.ordinal + 1) % 3
         _scheduleType.value = ScheduleType.entries[next]
         refresh()
+    }
+
+    fun selectTripForDetail(trip: Trip) {
+        _tripDetailState.value = TripDetailState(
+            trip = trip,
+            origin = _origin.value,
+            destination = _destination.value,
+            scheduleType = if (trip.isFuture) tomorrowScheduleType else _scheduleType.value,
+        )
     }
 
     fun updateNextIndex() {
