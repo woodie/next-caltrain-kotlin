@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -210,15 +210,19 @@ private fun StationList(
             state = listState,
             modifier = Modifier.fillMaxSize(),
         ) {
-            items(stations) { station ->
+            itemsIndexed(stations) { index, station ->
+                if (index > 0) {
+                    Divider(color = colors.calSwapped.copy(alpha = 0.4f))
+                }
+                // Checkmark + name centered as a unit, matching iOS layout
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .pointerInput(station) { detectTapGestures { onSelect(station) } }
-                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                        .padding(vertical = 10.dp),
+                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    // Checkmark offset to the left of the text
                     Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
                         if (station == selected) {
                             Icon(
