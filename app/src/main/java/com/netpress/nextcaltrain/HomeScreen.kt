@@ -84,6 +84,7 @@ fun HomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(colors.appBackground)
             .pointerInput(Unit) {
                 detectTapGestures { onNavigateToTripList?.invoke() }
             }
