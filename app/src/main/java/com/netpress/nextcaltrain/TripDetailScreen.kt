@@ -136,10 +136,15 @@ fun TripDetailScreen(
                 .padding(top = 8.dp, bottom = 24.dp)
         ) {
             stops.forEachIndexed { index, stop ->
+                // Segment below this dot takes the next stop's track color
+                val nextTrackColor = stops.getOrNull(index + 1)?.let { next ->
+                    if (next.role == StopRole.PAST) colors.calPast else colors.calArrive
+                } ?: colors.calArrive
                 StopRow(
                     stop = stop,
                     isFirst = index == 0,
                     isLast = index == stops.size - 1,
+                    nextTrackColor = nextTrackColor,
                     colors = colors,
                 )
             }
@@ -152,6 +157,7 @@ private fun StopRow(
     stop: TripStop,
     isFirst: Boolean,
     isLast: Boolean,
+    nextTrackColor: androidx.compose.ui.graphics.Color,
     colors: com.netpress.nextcaltrain.ui.theme.AppColors,
 ) {
     val trackColor = if (stop.role == StopRole.PAST) colors.calPast else colors.calArrive
@@ -204,10 +210,10 @@ private fun StopRow(
                     strokeWidth = lineW,
                 )
             }
-            // Line from dot edge to bottom of row (all rows except last)
+            // Line from dot edge to bottom of row — uses NEXT stop's color
             if (!isLast) {
                 drawLine(
-                    color = trackColor,
+                    color = nextTrackColor,
                     start = Offset(cx, dotCY + dotR),
                     end = Offset(cx, size.height),
                     strokeWidth = lineW,
