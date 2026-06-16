@@ -271,6 +271,7 @@ fun TripListScreen(
                             }
                         }
                     },
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 repeat(rowCount) { slot ->
                     val trip = trips.getOrNull(effectiveOffset + slot)
@@ -321,13 +322,15 @@ fun TripRow(
     val (departTime, departMer) = GoodTimes.partTime(trip.depart)
     val (arriveTime, arriveMer) = GoodTimes.partTime(trip.arrive)
 
+    // Row hugs its content (no fillMaxWidth) so the border tightly wraps the columns
+    // instead of stretching edge to edge; fixed column widths keep times aligned
+    // down the list regardless of digit count (e.g. "9:55" vs "12:55").
     Row(
         modifier = Modifier
-            .fillMaxWidth()
             .padding(vertical = 2.dp)
             .border(2.dp, borderColor, RoundedCornerShape(8.dp))
             .padding(vertical = 6.dp, horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.Bottom,
     ) {
         Text(
@@ -335,15 +338,16 @@ fun TripRow(
             fontSize = AppStyle.fontTrain,
             color = textColor,
             softWrap = false,
+            modifier = Modifier.width(56.dp),
         )
-        TripTimeDisplay(departTime, departMer, textColor)
-        TripTimeDisplay(arriveTime, arriveMer, textColor)
+        TripTimeDisplay(departTime, departMer, textColor, modifier = Modifier.width(96.dp))
+        TripTimeDisplay(arriveTime, arriveMer, textColor, modifier = Modifier.width(96.dp))
     }
 }
 
 @Composable
-private fun TripTimeDisplay(time: String, mer: String, color: Color) {
-    Row(verticalAlignment = Alignment.Bottom) {
+private fun TripTimeDisplay(time: String, mer: String, color: Color, modifier: Modifier = Modifier) {
+    Row(modifier = modifier, verticalAlignment = Alignment.Bottom) {
         Text(time, fontSize = AppStyle.fontBlurb, color = color, softWrap = false)
         Text(mer, fontSize = AppStyle.fontTrain, color = color, softWrap = false)
     }
