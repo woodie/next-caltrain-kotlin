@@ -62,9 +62,9 @@ UI architecture decisions. Outstanding work is UI polish, not missing features.
 app/src/main/java/com/netpress/nextcaltrain/
   GoodTimes.kt          CaltrainSchedule.kt    CaltrainService.kt
   Schedule.kt           TripViewModel.kt       TripViewModelFactory.kt
-  ScheduleViewModel.kt  MainActivity.kt        LoadingScreen.kt
-  HomeScreen.kt         TripListScreen.kt      TripDetailScreen.kt
-  StationSelectionScreen.kt  AboutScreen.kt
+  ScheduleViewModel.kt  MainActivity.kt        HomeScreen.kt
+  TripListScreen.kt     TripDetailScreen.kt    StationSelectionScreen.kt
+  AboutScreen.kt
   ui/theme/Color.kt     ui/theme/Theme.kt
 
 app/src/test/java/com/netpress/nextcaltrain/

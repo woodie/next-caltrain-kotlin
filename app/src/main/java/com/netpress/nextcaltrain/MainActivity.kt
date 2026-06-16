@@ -38,8 +38,8 @@ fun NextCaltrainApp() {
     val loadState by scheduleVm.loadState.collectAsStateWithLifecycle()
 
     when (val state = loadState) {
-        is LoadState.Loading -> LoadingScreen(message = "Loading schedule data")
-        is LoadState.Error   -> LoadingScreen(message = "Unable to load schedule")
+        is LoadState.Loading -> AboutScreen(scheduleDate = null, isLoading = true, loadFailed = false, onBack = null)
+        is LoadState.Error   -> AboutScreen(scheduleDate = null, isLoading = true, loadFailed = true, onBack = null)
         is LoadState.Ready   -> {
             val vm: TripViewModel = viewModel(
                 factory = TripViewModelFactory(state.schedule, context)

@@ -166,7 +166,7 @@ device after each change rather than stacking guesses.
 
 ### AboutScreen (`AboutScreen.kt`)
 - **Status**: Working, tested on device.
-- **Back button**: visible when `!isLoading && onBack != null`; hidden on LoadingScreen (onBack=null)
+- **Back button**: visible when `!isLoading && onBack != null`; hidden when loading (onBack=null). Also doubles as the loading/error screen — `MainActivity` calls it directly with `isLoading = true` for both `LoadState.Loading` and `LoadState.Error` (no separate LoadingScreen.kt)
 - **Background**: Box has `background(colors.appBackground)`; button has `background(colors.iconCircleBackground)`
 - **Known issues**: none
 
