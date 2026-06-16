@@ -27,8 +27,10 @@ data class Schedule(
         private const val REMOTE_URL = "https://next-caltrain-pwa.appspot.com/schedule.json"
         private const val CACHE_FILE = "schedule.json"
         private const val FETCH_TIMEOUT_MS = 10_000
-        private const val PREFS_NAME = "nextcaltrain"
-        private const val KEY_LAST_FETCH_MS = "lastFetchMs"
+        // internal (not private) so unit tests can build a fake SharedPreferences
+        // keyed the same way as production, instead of hardcoding magic strings.
+        internal const val PREFS_NAME = "nextcaltrain"
+        internal const val KEY_LAST_FETCH_MS = "lastFetchMs"
 
         fun loadCached(context: Context): Schedule? {
             val file = File(context.filesDir, CACHE_FILE)

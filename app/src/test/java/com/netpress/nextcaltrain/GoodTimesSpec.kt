@@ -4,7 +4,9 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldStartWith
+import java.util.Calendar
 
 class GoodTimesSpec : DescribeSpec({
 
@@ -117,6 +119,46 @@ class GoodTimesSpec : DescribeSpec({
                     val gt = GoodTimes()
                     gt.tomorrowDotw shouldBe 1
                 }
+            }
+        }
+
+        describe(".scheduleDateFor(epochMillis)") {
+            // Used by the once-per-day schedule fetch cap to decide whether a
+            // stored "last fetched at" timestamp still counts as "today" under
+            // the same "day starts at 2am" rule GoodTimes() itself uses. These
+            // tests build both timestamps from the same Calendar so the
+            // comparison holds regardless of the machine's default timezone.
+
+            it("returns the same schedule-day for two instants on the same calendar day, both after 2am") {
+                val cal = Calendar.getInstance()
+                cal.set(2026, Calendar.JUNE, 15, 10, 0, 0)
+                val morning = cal.timeInMillis
+                cal.set(2026, Calendar.JUNE, 15, 23, 0, 0)
+                val night = cal.timeInMillis
+
+                GoodTimes.scheduleDateFor(morning) shouldBe GoodTimes.scheduleDateFor(night)
+            }
+
+            it("treats 1am as still belonging to the previous schedule-day") {
+                val cal = Calendar.getInstance()
+                cal.set(2026, Calendar.JUNE, 15, 23, 0, 0)
+                val lateNight = GoodTimes.scheduleDateFor(cal.timeInMillis)
+
+                cal.set(2026, Calendar.JUNE, 16, 1, 0, 0)
+                val earlyMorning = GoodTimes.scheduleDateFor(cal.timeInMillis)
+
+                earlyMorning shouldBe lateNight
+            }
+
+            it("rolls over to the next schedule-day right at the 2am boundary") {
+                val cal = Calendar.getInstance()
+                cal.set(2026, Calendar.JUNE, 16, 1, 59, 0)
+                val beforeBoundary = GoodTimes.scheduleDateFor(cal.timeInMillis)
+
+                cal.set(2026, Calendar.JUNE, 16, 2, 1, 0)
+                val afterBoundary = GoodTimes.scheduleDateFor(cal.timeInMillis)
+
+                afterBoundary shouldNotBe beforeBoundary
             }
         }
     }

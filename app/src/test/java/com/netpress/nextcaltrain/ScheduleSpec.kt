@@ -1,0 +1,54 @@
+package com.netpress.nextcaltrain
+
+import android.content.Context
+import android.content.SharedPreferences
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.mockk.every
+import io.mockk.mockk
+
+/**
+ * Covers Schedule.fetchedToday() -- the once-per-day fetch cap that lets
+ * MainActivity/ScheduleViewModel skip a redundant network call once we
+ * already have today's schedule. fetchedToday() itself only reads from
+ * SharedPreferences and delegates to GoodTimes.scheduleDateFor(); the 2am
+ * boundary math for scheduleDateFor() is covered separately in GoodTimesSpec.
+ */
+class ScheduleSpec : DescribeSpec({
+
+    fun contextWithLastFetch(epochMillis: Long?): Context {
+        val prefs = mockk<SharedPreferences>()
+        every {
+            prefs.getLong(Schedule.KEY_LAST_FETCH_MS, -1L)
+        } returns (epochMillis ?: -1L)
+
+        val context = mockk<Context>()
+        every {
+            context.getSharedPreferences(Schedule.PREFS_NAME, Context.MODE_PRIVATE)
+        } returns prefs
+        return context
+    }
+
+    describe("Schedule.fetchedToday") {
+        context("when nothing has ever been fetched") {
+            it("returns false") {
+                Schedule.fetchedToday(contextWithLastFetch(null)).shouldBeFalse()
+            }
+        }
+
+        context("when the last fetch was a few minutes ago") {
+            it("returns true") {
+                val recent = System.currentTimeMillis() - 5 * 60 * 1000L
+                Schedule.fetchedToday(contextWithLastFetch(recent)).shouldBeTrue()
+            }
+        }
+
+        context("when the last fetch was more than a day ago") {
+            it("returns false") {
+                val stale = System.currentTimeMillis() - 26 * 60 * 60 * 1000L
+                Schedule.fetchedToday(contextWithLastFetch(stale)).shouldBeFalse()
+            }
+        }
+    }
+})
