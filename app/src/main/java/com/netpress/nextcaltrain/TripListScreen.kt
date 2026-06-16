@@ -54,6 +54,14 @@ fun TripListScreen(
     val rowHeightDp = 42.dp  // tightened leading to match iOS; must track TripRow's padding below
     val rowHeightPx = with(density) { rowHeightDp.toPx() }
 
+    // Actual measured height of a rendered TripRow, used for tap/drag slot math instead of
+    // rowHeightPx. rowHeightPx is a hand-tuned estimate (only used below for the rowCount
+    // layout calc, where no row exists yet to measure) — if it ever drifts from what
+    // TripRow actually renders (font scaling, a padding tweak), tap routing computed from
+    // it would desync from what's on screen, worse for higher slot indices. Measuring the
+    // real thing removes that whole class of bug.
+    var measuredRowHeightPx by remember { mutableFloatStateOf(rowHeightPx) }
+
     val effectiveOffset = (offset + dragShift).coerceIn(0, maxOf(trips.size - 1, 0))
     val selectedTrip = trips.getOrNull(effectiveOffset)
     val noTrains = trips.isEmpty()
@@ -244,7 +252,7 @@ fun TripListScreen(
                                 if (isDragging) {
                                     change.consume()
                                     accumulatedDrag = totalDragY
-                                    val newShift = -(accumulatedDrag / rowHeightPx).toInt()
+                                    val newShift = -(accumulatedDrag / measuredRowHeightPx).toInt()
                                     val proposed = latestOffset.value + newShift
                                     // Only write State when value changes — avoids a recomposition
                                     // on every pointer event (60-120/sec) when still in same row.
@@ -264,7 +272,7 @@ fun TripListScreen(
                                 accumulatedDrag = 0f
                             } else {
                                 // Tap — find which row and navigate
-                                val slot = (down.position.y / rowHeightPx).toInt()
+                                val slot = (down.position.y / measuredRowHeightPx).toInt()
                                 val tapped = latestTrips.value.getOrNull(latestOffset.value + slot)
                                 if (tapped != null) {
                                     vm.selectTripForDetail(tapped)
@@ -292,6 +300,13 @@ fun TripListScreen(
                             isDeparting = slot == 0 && isSelectedDeparting,
                             swapped = vm.swapped,
                             colors = colors,
+                            // Measure the first row's real rendered height and feed it back
+                            // into the gesture handler above — see measuredRowHeightPx comment.
+                            modifier = if (slot == 0) {
+                                Modifier.onGloballyPositioned { measuredRowHeightPx = it.size.height.toFloat() }
+                            } else {
+                                Modifier
+                            },
                         )
                     }
                 }
@@ -309,6 +324,7 @@ fun TripRow(
     isDeparting: Boolean,
     swapped: Boolean,
     colors: com.netpress.nextcaltrain.ui.theme.AppColors,
+    modifier: Modifier = Modifier,
 ) {
     val textColor = when {
         isInactive || swapped -> colors.calPast
@@ -328,7 +344,7 @@ fun TripRow(
     // instead of stretching edge to edge; fixed column widths keep times aligned
     // down the list regardless of digit count (e.g. "9:55" vs "12:55").
     Row(
-        modifier = Modifier
+        modifier = modifier
             .padding(vertical = 1.dp)
             .border(2.dp, borderColor, RoundedCornerShape(8.dp))
             .padding(vertical = 4.dp, horizontal = 16.dp),
