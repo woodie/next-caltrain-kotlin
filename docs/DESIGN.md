@@ -1,7 +1,7 @@
 # Next Caltrain — Design Document
 
 This document captures the architecture, conventions, and lessons learned from
-building the PWA (`next-caltrain-pwa`) and iOS (`next-caltrain-ios`) versions
+building the PWA (`next-caltrain-pwa`) and iOS (`next-caltrain-swift`) versions
 of Next Caltrain. The Kotlin/Android app should follow these same patterns.
 
 ---

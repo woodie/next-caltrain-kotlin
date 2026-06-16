@@ -8,7 +8,7 @@ Android/Kotlin port of Next Caltrain — a live countdown app for Caltrain
 commuters. Two sibling repos:
 
 - `next-caltrain-pwa` — KaiOS PWA (JavaScript), hosts the published `schedule.json`
-- `next-caltrain-ios` — SwiftUI iOS app, reference implementation
+- `next-caltrain-swift` — SwiftUI iOS app, reference implementation
 
 This Kotlin app should match the iOS feature set. Read `docs/DESIGN.md` for
 full architecture details.
@@ -130,6 +130,6 @@ Pattern: `{type}/{issue-number}-{short-description}`
 
 ```
 ~/workspace/next-caltrain-pwa
-~/workspace/next-caltrain-ios
+~/workspace/next-caltrain-swift
 ~/workspace/next-caltrain-kotlin
 ```

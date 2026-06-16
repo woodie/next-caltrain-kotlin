@@ -1,4 +1,4 @@
-# next-caltrain-ios
+# next-caltrain-kotlin
 
 Live countdown to your next Caltrain, with automatic schedule detection.
 

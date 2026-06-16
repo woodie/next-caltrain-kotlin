@@ -210,4 +210,4 @@ iOS app releasing separately; both share the same schedule JSON at
 ## iOS Reference
 
 Source browsable via GitHub API:
-`https://api.github.com/repos/woodie/next-caltrain-ios/contents/Sources/NextCaltrain`
+`https://api.github.com/repos/woodie/next-caltrain-swift/contents/Sources/NextCaltrain`
