@@ -2,6 +2,11 @@
 <resources>
 
     <style name="Theme.NextCaltrain" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Hardcoded black, same for day and night (no values-night split). Any screen
+             whose root container omits Modifier.background(colors.appBackground) will
+             silently show this black window behind its content -- invisible in dark mode,
+             but looks like a rendering bug in light mode. When adding a new screen, set
+             that modifier explicitly on its root container. See issue #6. -->
         <item name="android:windowBackground">@android:color/black</item>
     </style>
 </resources>
