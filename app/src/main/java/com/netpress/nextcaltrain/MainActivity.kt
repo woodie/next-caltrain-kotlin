@@ -6,23 +6,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.netpress.nextcaltrain.ui.theme.NextCaltrainTheme
-import kotlinx.coroutines.*
-
-/**
- * Loading state machine mirroring iOS ContentView.loadSchedule():
- * - No cache: block on network fetch. Success -> HomeScreen. Failure -> error screen.
- * - Cache exists: race fetch against 10s timeout. Winner -> HomeScreen.
- */
-sealed class LoadState {
-    object Loading : LoadState()
-    object Error : LoadState()
-    data class Ready(val schedule: Schedule) : LoadState()
-}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,28 +28,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun NextCaltrainApp() {
     val context = LocalContext.current
-    var loadState by remember { mutableStateOf<LoadState>(LoadState.Loading) }
+    val scheduleVm: ScheduleViewModel = viewModel()
 
-    LaunchedEffect(Unit) {
-        val cached = Schedule.loadCached(context)
-        loadState = if (cached == null) {
-            try {
-                val schedule = Schedule.fetchFromNetwork(context)
-                LoadState.Ready(schedule)
-            } catch (e: Exception) {
-                LoadState.Error
-            }
-        } else {
-            try {
-                withTimeout(10_000L) {
-                    val schedule = Schedule.fetchFromNetwork(context)
-                    LoadState.Ready(schedule)
-                }
-            } catch (e: Exception) {
-                LoadState.Ready(cached)
-            }
-        }
-    }
+    // ensureLoaded() no-ops after its first call, so this is safe to re-run after
+    // rotation recreates the Activity/composition — it won't re-trigger the fetch
+    // or flash the loading screen again. Pass applicationContext so the coroutine
+    // (which can run for up to 10s) never holds a reference to a destroyed Activity.
+    LaunchedEffect(Unit) { scheduleVm.ensureLoaded(context.applicationContext) }
+    val loadState by scheduleVm.loadState.collectAsStateWithLifecycle()
 
     when (val state = loadState) {
         is LoadState.Loading -> LoadingScreen(message = "Loading schedule data")

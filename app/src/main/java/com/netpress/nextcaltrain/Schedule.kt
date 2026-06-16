@@ -27,6 +27,10 @@ data class Schedule(
         private const val REMOTE_URL = "https://next-caltrain-pwa.appspot.com/schedule.json"
         private const val CACHE_FILE = "schedule.json"
         private const val FETCH_TIMEOUT_MS = 10_000
+        // internal (not private) so unit tests can build a fake SharedPreferences
+        // keyed the same way as production, instead of hardcoding magic strings.
+        internal const val PREFS_NAME = "nextcaltrain"
+        internal const val KEY_LAST_FETCH_MS = "lastFetchMs"
 
         fun loadCached(context: Context): Schedule? {
             val file = File(context.filesDir, CACHE_FILE)
@@ -38,6 +42,23 @@ data class Schedule(
             } catch (e: Exception) {
                 null
             }
+        }
+
+        /** True if the last successful network fetch landed on today's schedule-day
+         * (2am boundary, see GoodTimes.scheduleDateFor). Used to skip redundant
+         * network calls once we already have today's data. */
+        fun fetchedToday(context: Context): Boolean {
+            val last = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .getLong(KEY_LAST_FETCH_MS, -1L)
+            if (last < 0) return false
+            return GoodTimes.scheduleDateFor(last) == GoodTimes.scheduleDateFor(System.currentTimeMillis())
+        }
+
+        private fun markFetched(context: Context) {
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putLong(KEY_LAST_FETCH_MS, System.currentTimeMillis())
+                .apply()
         }
 
         suspend fun fetchFromNetwork(context: Context): Schedule {
@@ -55,6 +76,7 @@ data class Schedule(
                     val schedule = fromJson(json)
                     if (!schedule.isValid) throw Exception("Invalid schedule data")
                     File(context.filesDir, CACHE_FILE).writeText(text)
+                    markFetched(context)
                     schedule
                 } finally {
                     connection.disconnect()

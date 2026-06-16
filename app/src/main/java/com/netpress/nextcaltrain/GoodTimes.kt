@@ -59,6 +59,13 @@ data class GoodTimes(
             )
         }
 
+        /** Returns the yyyy-MM-dd schedule-day string for an arbitrary instant, using
+         * the same "day starts at 2am" rule as invoke(): subtract 2 hours before formatting.
+         * Lets us compare "today" against a stored last-fetch timestamp for the
+         * once-per-day schedule fetch policy. */
+        fun scheduleDateFor(epochMillis: Long): String =
+            dateFmt.format(Date(epochMillis - 2 * 60 * 60 * 1000L))
+
         fun partTime(minutes: Int): Pair<String, String> {
             var hrs = (minutes / 60) % 24
             val min = minutes % 60

@@ -1,11 +1,13 @@
 package com.netpress.nextcaltrain
 
+import android.content.Context
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -25,8 +27,12 @@ class TripViewModelSpec : DescribeSpec({
         GoodTimes.debugOverrideDotw = null
     }
 
+    // TripViewModel reads/writes stop preferences via Context.getSharedPreferences()
+    // in init{}. A relaxed mock answers every unstubbed call with the type's default
+    // (0 for the stored AM/PM stop indices), which is fine here since every test
+    // immediately overwrites origin/destination via setOrigin/setDestination anyway.
     fun makeViewModel(schedule: Schedule, origin: String, destination: String): TripViewModel {
-        return TripViewModel(schedule).apply {
+        return TripViewModel(schedule, mockk<Context>(relaxed = true)).apply {
             setOrigin(origin)
             setDestination(destination)
             refresh()

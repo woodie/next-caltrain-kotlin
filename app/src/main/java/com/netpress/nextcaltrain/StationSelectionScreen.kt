@@ -1,6 +1,7 @@
 package com.netpress.nextcaltrain
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -87,7 +88,9 @@ fun StationSelectionScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .statusBarsPadding()
+                .windowInsetsPadding(
+                    WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                )
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -186,8 +189,21 @@ private fun StationList(
     val listState = rememberLazyListState()
     val selectedIndex = stations.indexOf(selected).coerceAtLeast(0)
 
+    // Center the selected row in the viewport, matching iOS's
+    // `proxy.scrollTo(station, anchor: .center)`. LazyListState has no anchor concept,
+    // so we jump to the item if it's off-screen (to make it measurable), then read its
+    // real position/size from layoutInfo and animate the precise correction to center it.
     LaunchedEffect(selected) {
-        listState.animateScrollToItem(selectedIndex)
+        if (listState.layoutInfo.visibleItemsInfo.none { it.index == selectedIndex }) {
+            listState.scrollToItem(selectedIndex)
+        }
+        val info = listState.layoutInfo
+        val itemInfo = info.visibleItemsInfo.firstOrNull { it.index == selectedIndex }
+        if (itemInfo != null) {
+            val viewportCenter = (info.viewportEndOffset - info.viewportStartOffset) / 2
+            val itemCenter = itemInfo.offset + itemInfo.size / 2
+            listState.animateScrollBy((itemCenter - viewportCenter).toFloat())
+        }
     }
 
     Column(modifier = modifier.fillMaxHeight()) {
@@ -196,7 +212,7 @@ private fun StationList(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(colors.appBackground)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp),
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -207,10 +223,10 @@ private fun StationList(
         }
 
         // BoxWithConstraints lets us compute start padding relative to the panel width
-        // so portrait (~360dp → ~96dp) and landscape panels (~400dp → ~116dp) both
-        // center the content block correctly, with a +16dp rightward bias.
+        // so portrait and landscape panels both center the content block correctly,
+        // with a +12dp rightward bias matching iOS's fixed `.offset(x: 12)`.
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val startPad = ((maxWidth - 200.dp) / 2 + 8.dp).coerceAtLeast(8.dp)
+            val startPad = ((maxWidth - 200.dp) / 2 + 12.dp).coerceAtLeast(12.dp)
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
@@ -223,7 +239,7 @@ private fun StationList(
                         modifier = Modifier
                             .fillMaxWidth()
                             .pointerInput(station) { detectTapGestures { onSelect(station) } }
-                            .padding(start = startPad, end = 16.dp, top = 10.dp, bottom = 10.dp),
+                            .padding(start = startPad, end = 16.dp, top = 6.dp, bottom = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Box(modifier = Modifier.width(32.dp), contentAlignment = Alignment.Center) {
