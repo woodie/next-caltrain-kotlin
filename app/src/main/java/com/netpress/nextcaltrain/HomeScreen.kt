@@ -128,7 +128,13 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .padding(top = 8.dp)
-                .statusBarsPadding()
+                // Status bar covers the top edge; the navigation bar can also land on
+                // the left/right edge instead of the bottom (e.g. 3-button nav in
+                // landscape), which otherwise covers this row's trailing swap icon.
+                // Pad for both without adding an unnecessary bottom inset in portrait.
+                .windowInsetsPadding(
+                    WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                )
                 .align(Alignment.TopStart),
             verticalAlignment = Alignment.CenterVertically,
         ) {

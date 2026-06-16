@@ -46,7 +46,9 @@ fun AboutScreen(
                 onClick = onBack,
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .statusBarsPadding()
+                    .windowInsetsPadding(
+                        WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                    )
                     .padding(top = 8.dp)
                     .size(AppStyle.iconButtonSizeDp.dp)
                     .clip(CircleShape)
