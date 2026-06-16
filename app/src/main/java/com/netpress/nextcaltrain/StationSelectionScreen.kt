@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -22,6 +23,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
@@ -105,24 +107,33 @@ fun StationSelectionScreen(
             }
             Spacer(modifier = Modifier.weight(1f))
             if (!isAlreadyDefault) {
-                IconButton(
-                    onClick = { vm.restoreDefaultStops() },
+                // Grouped in one pill (matching iOS's paired restore+save buttons)
+                // instead of two separate circles.
+                Row(
                     modifier = Modifier
-                        .size(AppStyle.iconButtonSizeDp.dp)
-                        .clip(CircleShape)
+                        .height(AppStyle.iconButtonSizeDp.dp)
+                        .clip(RoundedCornerShape(AppStyle.iconButtonSizeDp.dp / 2))
                         .background(colors.iconCircleBackground),
                 ) {
-                    Icon(Icons.Filled.Refresh, contentDescription = "Restore defaults", tint = colors.appText)
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                IconButton(
-                    onClick = { showSaveConfirm = true },
-                    modifier = Modifier
-                        .size(AppStyle.iconButtonSizeDp.dp)
-                        .clip(CircleShape)
-                        .background(colors.iconCircleBackground),
-                ) {
-                    Icon(Icons.Filled.Check, contentDescription = "Save", tint = colors.calArrive)
+                    IconButton(
+                        onClick = { vm.restoreDefaultStops() },
+                        modifier = Modifier.size(AppStyle.iconButtonSizeDp.dp),
+                    ) {
+                        // Refresh is drawn clockwise; mirror it horizontally so it
+                        // reads as counterclockwise, matching iOS's arrow.counterclockwise.
+                        Icon(
+                            Icons.Filled.Refresh,
+                            contentDescription = "Restore defaults",
+                            tint = colors.appText,
+                            modifier = Modifier.scale(scaleX = -1f, scaleY = 1f),
+                        )
+                    }
+                    IconButton(
+                        onClick = { showSaveConfirm = true },
+                        modifier = Modifier.size(AppStyle.iconButtonSizeDp.dp),
+                    ) {
+                        Icon(Icons.Filled.Check, contentDescription = "Save", tint = colors.calArrive)
+                    }
                 }
             }
         }

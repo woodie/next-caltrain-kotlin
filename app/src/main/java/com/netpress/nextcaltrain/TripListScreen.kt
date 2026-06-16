@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -152,7 +153,14 @@ fun TripListScreen(
                                 .clip(CircleShape)
                                 .background(colors.iconCircleBackground),
                         ) {
-                            Icon(Icons.Filled.Refresh, contentDescription = "Reset", tint = colors.appText)
+                            // Refresh is drawn clockwise; mirror it horizontally so it
+                            // reads as counterclockwise, matching iOS's arrow.counterclockwise.
+                            Icon(
+                                Icons.Filled.Refresh,
+                                contentDescription = "Reset",
+                                tint = colors.appText,
+                                modifier = Modifier.scale(scaleX = -1f, scaleY = 1f),
+                            )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                     }
