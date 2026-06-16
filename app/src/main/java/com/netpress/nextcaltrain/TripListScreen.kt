@@ -51,7 +51,7 @@ fun TripListScreen(
     var dragShift by remember { mutableIntStateOf(0) }
     var accumulatedDrag by remember { mutableFloatStateOf(0f) }
     var headerHeightPx by remember { mutableFloatStateOf(0f) }
-    val rowHeightDp = 48.dp  // 44dp content + 2dp top/bottom padding
+    val rowHeightDp = 42.dp  // tightened leading to match iOS; must track TripRow's padding below
     val rowHeightPx = with(density) { rowHeightDp.toPx() }
 
     val effectiveOffset = (offset + dragShift).coerceIn(0, maxOf(trips.size - 1, 0))
@@ -123,7 +123,7 @@ fun TripListScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .statusBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(horizontal = 16.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
@@ -161,7 +161,7 @@ fun TripListScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(horizontal = 16.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     IconButton(
@@ -327,9 +327,9 @@ fun TripRow(
     // down the list regardless of digit count (e.g. "9:55" vs "12:55").
     Row(
         modifier = Modifier
-            .padding(vertical = 2.dp)
+            .padding(vertical = 1.dp)
             .border(2.dp, borderColor, RoundedCornerShape(8.dp))
-            .padding(vertical = 6.dp, horizontal = 16.dp),
+            .padding(vertical = 4.dp, horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.Bottom,
     ) {
