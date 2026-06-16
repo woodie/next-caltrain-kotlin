@@ -127,8 +127,8 @@ fun TripDetailScreen(
             Spacer(modifier = Modifier.size(AppStyle.iconButtonSizeDp.dp))
         }
 
-        // Stop list — centered as a block; end padding biases position so station names
-        // have more breathing room on the right (ragged right edge closer to screen edge).
+        // Stop list — centered as a block, matching iOS (no rightward bias; the ragged
+        // right edge from varying station-name lengths is expected and left as-is).
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -136,7 +136,7 @@ fun TripDetailScreen(
                 .padding(top = 8.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(modifier = Modifier.padding(start = 16.dp)) {
+            Column {
                 stops.forEachIndexed { index, stop ->
                     // Line colors are time-based (not role-based) so origin/destination dots
                     // show white while their segment colors still reflect past/future travel.
