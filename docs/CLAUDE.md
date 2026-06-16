@@ -15,10 +15,17 @@ full architecture details.
 
 ## Schedule data
 
-Fetched at runtime from:
-```
-https://next-caltrain-pwa.appspot.com/schedule.json
-```
+Fetched at runtime from the URL in `BuildConfig.SCHEDULE_URL` (set in `app/build.gradle.kts`),
+resolved with this precedence:
+1. `local.properties` (gitignored) — per-developer override, e.g. to point at
+   `next-caltrain-swift/tools/hang_server.py` for instant-fail / 10s-timeout-race testing.
+   Never committed, no source edit/revert needed.
+2. `schedule-endpoint.properties` (committed, repo root) — the real production URL.
+   If the schedule data ever moves to a new home, edit and commit this file directly.
+3. A hardcoded literal in `build.gradle.kts` — last-resort safety net if both files are
+   missing.
+
+Currently: `https://next-caltrain-pwa.appspot.com/schedule.json`.
 
 Times are minutes since midnight. Missing stops are null. See `docs/DESIGN.md`
 for full format.

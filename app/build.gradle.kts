@@ -1,7 +1,34 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
+
+// Schedule endpoint resolution, highest priority first:
+//   1. local.properties (gitignored) — per-developer override, e.g. to point at a
+//      local hang/instant-fail test server. Never committed.
+//   2. schedule-endpoint.properties (committed) — the real production URL. If the
+//      schedule data ever moves to a new home, edit and commit this file directly;
+//      no source edit needed.
+//   3. Hardcoded literal below — last-resort safety net if both files are missing.
+// See docs/CLAUDE.md "Schedule data".
+val localProperties = Properties().apply {
+    val localPropsFile = rootProject.file("local.properties")
+    if (localPropsFile.exists()) {
+        localPropsFile.inputStream().use { load(it) }
+    }
+}
+val defaultProperties = Properties().apply {
+    val defaultsFile = rootProject.file("schedule-endpoint.properties")
+    if (defaultsFile.exists()) {
+        defaultsFile.inputStream().use { load(it) }
+    }
+}
+val scheduleUrl: String = localProperties.getProperty("scheduleUrl")
+    ?: defaultProperties.getProperty("scheduleUrl")
+    ?: "https://next-caltrain-pwa.appspot.com/schedule.json"
+
 android {
     namespace = "com.netpress.nextcaltrain"
     compileSdk {
@@ -16,6 +43,7 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "SCHEDULE_URL", "\"$scheduleUrl\"")
     }
     buildTypes {
         release {
@@ -30,6 +58,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 dependencies {

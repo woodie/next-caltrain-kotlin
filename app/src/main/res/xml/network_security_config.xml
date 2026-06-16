@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Allows plaintext HTTP only to loopback, so local test servers (e.g.
+  next-caltrain-swift/tools/hang_server.py via `adb reverse`) work when
+  scheduleUrl is overridden in local.properties. The real endpoint is HTTPS
+  and unaffected; this does not loosen security for any real-world host.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+    </domain-config>
+</network-security-config>

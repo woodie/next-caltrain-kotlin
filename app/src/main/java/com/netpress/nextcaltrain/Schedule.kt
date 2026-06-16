@@ -24,7 +24,8 @@ data class Schedule(
     val scheduleDate: Long?,
 ) {
     companion object {
-        private const val REMOTE_URL = "https://next-caltrain-pwa.appspot.com/schedule.json"
+        // Defaults to prod; override via `scheduleUrl=` in local.properties (see build.gradle.kts).
+        private val REMOTE_URL = BuildConfig.SCHEDULE_URL
         private const val CACHE_FILE = "schedule.json"
         private const val FETCH_TIMEOUT_MS = 10_000
         // internal (not private) so unit tests can build a fake SharedPreferences
