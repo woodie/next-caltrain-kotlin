@@ -15,6 +15,13 @@ aren't available without a separate XML theme dep). AppCompat is declared explic
 in `gradle/libs.versions.toml` (`appcompat = "1.7.0"`). True black in dark mode via
 `<item name="android:windowBackground">@android:color/black</item>`.
 
+**Landmine**: `windowBackground` is hardcoded black for ALL modes (no `values-night`
+split). Any screen that forgets `Modifier.background(colors.appBackground)` on its root
+container will silently show a black background in light mode (text drawn in light-mode
+colors over black look like a rendering bug, not a missing-modifier bug). HomeScreen hit
+this exact issue — fixed by adding `.background(colors.appBackground)` to its root `Box`.
+When adding a new screen, always set this explicitly; don't rely on the window theme.
+
 ### ViewModel
 `TripViewModel(schedule, context)` is constructed once at the activity level via
 `TripViewModelFactory` and passed to all NavHost composables. Do NOT call `viewModel()`
@@ -87,10 +94,34 @@ BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
 `200.dp` is the nominal content block width (checkmark box + longest station name).
 This self-adjusts for portrait vs landscape panels without any hardcoded breakpoints.
 
+### Dynamic Row Count to Fill Available Height (TripListScreen)
+iOS shows as many trip rows as fit below the header — more in portrait, fewer in
+landscape. Pattern used to match this:
+1. Wrap the screen in `BoxWithConstraints` to get `constraints.maxHeight` (px).
+2. Measure the header's actual rendered height via
+   `Modifier.onGloballyPositioned { headerHeightPx = it.size.height.toFloat() }`
+   on the header `Column` (don't hardcode header height — it differs by content/orientation).
+3. `rowCount = ((screenHeightPx - headerHeightPx) / rowHeightPx).toInt()`, clamped to
+   `[1, trips.size]`. Fall back to a fixed default (6) for the first frame before
+   `headerHeightPx` is measured (it's 0 initially).
+4. `rowHeightDp` is a single source of truth shared by three places that must stay in
+   sync: the `rowCount` math above, `TripRow`'s actual rendered height (padding values),
+   and the touch-dispatch math (`slot = (down.position.y / rowHeightPx).toInt()`) used to
+   route taps to the right row. Changing `TripRow`'s padding without updating
+   `rowHeightDp` desyncs tap routing from what's drawn on screen.
+
+**Gotcha**: this is integer floor division — a near-miss ratio (e.g. 4.8 rows of space)
+truncates to 4, leaving up to ~1 row of visible dead space below the last row. If you see
+dead space that looks like "almost another row," shave a few dp off the header padding
+or `rowHeightDp` rather than assuming the available-height calculation is broken.
+Small, conservative trims (2–4dp at a time) compound fast in floor-division — verify on
+device after each change rather than stacking guesses.
+
 ## Screen Status
 
 ### HomeScreen (`HomeScreen.kt`)
 - **Status**: Working, tested on device. Drag selection working and persistent.
+  Light mode background bug fixed (see Theme landmine note above).
 - **Circle size**: 250.dp
 - **Gradient**: `Color(0xFF808080)` → `appBackground`, 200.dp height at top of screen
 - **Drag**: `rememberUpdatedState` fix applied; `onDragStart = markDragStart()`
@@ -98,10 +129,19 @@ This self-adjusts for portrait vs landscape panels without any hardcoded breakpo
 
 ### TripListScreen (`TripListScreen.kt`)
 - **Status**: Working, tested on device. Drag selection working and persistent.
+  Row layout tightened and row count tuned to match iOS density (see below).
 - **Drag fix**: single `awaitEachGesture` + `rememberUpdatedState`; `markDragStart()`
   on touchSlop; `pointerInput(trips.size)` key prevents mid-drag restart
-- **Alignment**: `TripRow` `fillMaxWidth()`, `Arrangement.SpaceBetween`,
-  `padding(horizontal = 16.dp)` on Column
+- **Row layout**: `TripRow`'s `Row` has no `fillMaxWidth()` — uses
+  `Arrangement.spacedBy(16.dp)` with fixed-width columns (train ID 56.dp, depart/arrive
+  times 96.dp each) so the green border hugs the content instead of stretching edge to
+  edge, and times stay aligned regardless of digit count. The rows' parent `Column` has
+  `horizontalAlignment = Alignment.CenterHorizontally` to center the now content-sized
+  block on screen.
+- **Row density**: `rowHeightDp = 42.dp` (see "Dynamic Row Count" pattern above); header
+  rows use `vertical = 2.dp` padding. Currently renders ~16 rows in portrait, 5 in
+  landscape — matches iOS density. If iOS gains/loses a row at some breakpoint, tune
+  `rowHeightDp` and header padding together, in small increments, and retest on device.
 - **To verify**: tapping a row navigates to TripDetail (tap routing exists, unconfirmed)
 
 ### TripDetailScreen (`TripDetailScreen.kt`)
@@ -154,8 +194,11 @@ build.sh / run.sh / test.sh
 
 ## Testing Order for Next Session
 
-1. Light mode pass on all screens
-2. Play Store screenshots
+1. Light mode pass on remaining screens (HomeScreen confirmed fixed; spot-check the rest
+   for the same missing-`.background(colors.appBackground)` landmine)
+2. TripListScreen row tap routing — confirm tapping a row (not just drag) navigates to
+   TripDetail correctly now that row width/centering changed
+3. Play Store screenshots
 
 ## Play Store
 
