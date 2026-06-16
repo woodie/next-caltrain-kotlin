@@ -179,7 +179,8 @@ app/src/main/java/com/netpress/nextcaltrain/
   TripDetailScreen.kt        ← Canvas track line, stop roles
   StationSelectionScreen.kt  ← LazyColumn pickers, save/restore logic
   AboutScreen.kt             ← schedule date display
-  MainActivity.kt            ← NavHost, shared vm construction
+  MainActivity.kt            ← NavHost, shared vm construction, delegates loading to below
+  ScheduleViewModel.kt       ← rotation-surviving load state machine, once-per-day fetch cap
   TripViewModel.kt           ← SharedPrefs, TripDetailState, swapStations, setOffset
   TripViewModelFactory.kt    ← takes (schedule, context)
 

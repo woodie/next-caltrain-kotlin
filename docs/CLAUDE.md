@@ -25,42 +25,51 @@ for full format.
 
 ## Current status
 
-Core data layer and HomeScreen are working and tested on the emulator.
+All five screens (Home, TripList, TripDetail, StationSelection, About) are implemented,
+navigable, and tested on device. See `docs/CLAUDE_ADDITIONS.md` for per-screen status and
+UI architecture decisions. Outstanding work is UI polish, not missing features.
 
 ### Done
-- `GoodTimes.kt` — 2-hour rollback, tomorrowDate/tomorrowDotw, debug overrides
+- `GoodTimes.kt` — 2-hour rollback, tomorrowDate/tomorrowDotw, debug overrides,
+  `scheduleDateFor(epochMillis)` (2am day-boundary rule, used by the fetch cap below)
 - `CaltrainSchedule.kt` — weekday/weekend/holiday detection, special dates, forTomorrow
 - `CaltrainService.kt` — direct routes, transfer routes, isSouthCounty, Leg/Trip models
-- `Schedule.kt` — JSON parsing, fetch/cache pipeline (HttpURLConnection, no third-party lib)
+- `Schedule.kt` — JSON parsing, fetch/cache pipeline (HttpURLConnection, no third-party lib);
+  `fetchedToday(context)` caps network fetches to once per schedule-day
 - `TripViewModel.kt` — tomorrow appending, isFuture, offset/nextIndex, StateFlow
 - `TripViewModelFactory.kt` — factory for injecting Schedule into ViewModel
-- `MainActivity.kt` — loading state machine (no cache → block; cache → race 10s timeout)
+- `ScheduleViewModel.kt` — hosts the loading state machine in a ViewModel (survives Activity
+  recreation on rotation, so rotating never re-flashes the loading screen). Three cases:
+  cache exists + already fetched today → use cache, no network call; no cache → block on
+  fetch; cache exists but not fetched today → race fetch against a 10s timeout, fall back to
+  stale cache on timeout/failure.
+- `MainActivity.kt` — `NavHost` + screen wiring; delegates loading to `ScheduleViewModel`
 - `AboutScreen.kt` — loading/about screen with train icon, matches iOS AboutView
-- `HomeScreen.kt` — big circle with countdown, toolbar, swap, drag to scroll trips
-- Tests — Kotest DescribeSpec for all data layer classes, 63 tests passing
+- `HomeScreen.kt`, `TripListScreen.kt`, `TripDetailScreen.kt`, `StationSelectionScreen.kt`
+- Tests — Kotest DescribeSpec for all data layer classes + ViewModel/fetch-cap logic
+  (MockK for mocking `Context`/`SharedPreferences`)
 
-### Still needed
-- Navigation: tap circle → TripListScreen, tap station names → StationSelectionScreen,
-  tap "Next Caltrain" → AboutScreen (with schedule date)
-- `TripListScreen.kt` — scrollable list of trip rows, mirroring iOS TripListView
-- `TripDetailScreen.kt` — stop-by-stop detail, mirroring iOS TripDetailView
-- `StationSelectionScreen.kt` — station picker, mirroring iOS StationSelectionView
-- Station persistence (SharedPreferences, mirroring iOS UserDefaults stopAM/stopPM)
-- Dark mode verification
-- Real device testing
+### Known gaps
+- `ScheduleViewModel.ensureLoaded()` (the rotation-survival logic above) has no test
+  coverage — it calls `Schedule.loadCached(context)`/`fetchFromNetwork(context)` directly
+  with no DI seam, so unit-testing it would need either Robolectric/instrumented tests or a
+  small refactor to inject those calls.
+- Dark mode verification, real device testing pass
 
 ## Key files
 
 ```
 app/src/main/java/com/netpress/nextcaltrain/
-  GoodTimes.kt         CaltrainSchedule.kt   CaltrainService.kt
-  Schedule.kt          TripViewModel.kt      TripViewModelFactory.kt
-  MainActivity.kt      HomeScreen.kt         AboutScreen.kt
-  LoadingScreen.kt     ui/theme/Color.kt     ui/theme/Theme.kt
+  GoodTimes.kt          CaltrainSchedule.kt    CaltrainService.kt
+  Schedule.kt           TripViewModel.kt       TripViewModelFactory.kt
+  ScheduleViewModel.kt  MainActivity.kt        LoadingScreen.kt
+  HomeScreen.kt         TripListScreen.kt      TripDetailScreen.kt
+  StationSelectionScreen.kt  AboutScreen.kt
+  ui/theme/Color.kt     ui/theme/Theme.kt
 
 app/src/test/java/com/netpress/nextcaltrain/
-  GoodTimesSpec.kt     CaltrainScheduleSpec.kt  CaltrainServiceSpec.kt
-  TripViewModelSpec.kt SpecFixtures.kt
+  GoodTimesSpec.kt      CaltrainScheduleSpec.kt  CaltrainServiceSpec.kt
+  TripViewModelSpec.kt  ScheduleSpec.kt          SpecFixtures.kt
 ```
 
 ## Run tests
@@ -97,27 +106,25 @@ app/src/test/java/com/netpress/nextcaltrain/
 - **Floating overlay pattern**: ring (`Canvas`) and content (`Column`) are siblings in
   a `Box`, both centered. Content is not constrained by ring size.
 
-## Navigation (not yet wired up)
+## Navigation
 
-`HomeScreen` accepts lambdas:
-- `onNavigateToTripList` — tap circle
-- `onNavigateToAbout` — tap "Next Caltrain" title
-- `onNavigateToStationSelection` — tap station names
+Wired up via `NavHost` in `MainActivity.kt`'s `NextCaltrainApp()`. Routes: `home`,
+`tripList`, `tripDetail`, `stationSelection`, `about`. `HomeScreen`/`TripListScreen` take
+`onNavigateTo*` lambdas that call `navController.navigate(...)`.
 
-These need to be connected via `NavHost` in `MainActivity.kt`.
+## Editing workflow
 
-## Git workflow
+Claude has direct read/write access to this repo's working copy — it edits files in place
+with its file tools (no download/move step), then runs `./gradlew clean test` to verify and
+commits directly with git. Commits go on `main` and are left unpushed unless asked to push.
 
-Branches tied to GitHub issues:
+Branches tied to GitHub issues, when used:
 ```
 feature/29-append-tomorrow-trips
 bugfix/12-remove-unused-rowwidthkey
 ```
 
 Pattern: `{type}/{issue-number}-{short-description}`
-
-Always `mv` files from `~/Downloads/`, never `cp`.
-Always include the copy-paste command with every file change.
 
 ## Sibling repo paths
 
