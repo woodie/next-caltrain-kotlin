@@ -39,6 +39,9 @@ Secondary: Maps & Navigation
 ## Content rating
 Everyone (no objectionable content, no data collection)
 
+## Privacy policy URL
+https://next-caltrain-pwa.appspot.com/privacy.html
+
 ## Notes (not submitted — internal reference)
 - Keywords are embedded naturally in the description (caltrain, train,
   schedule, commute, Bay Area, San Francisco, South County, transit,
@@ -46,3 +49,8 @@ Everyone (no objectionable content, no data collection)
 - Short description doubles as the promo blurb shown in search results
   and on the app page before "Read more" is tapped.
 - Full description can be updated anytime post-launch without a new build.
+- Data safety form (filled out live in Play Console, separate from this
+  doc): answer "No data collected" — per the privacy policy, the app has
+  no accounts, analytics, ads, or tracking; the only network request is
+  an anonymous fetch of the public schedule.json file, identical for
+  every user.
