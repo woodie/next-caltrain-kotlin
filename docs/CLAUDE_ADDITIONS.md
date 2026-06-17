@@ -199,17 +199,18 @@ build.sh / run.sh / test.sh
    for the same missing-`.background(colors.appBackground)` landmine)
 2. TripListScreen row tap routing — confirm tapping a row (not just drag) navigates to
    TripDetail correctly now that row width/centering changed
-3. Play Store screenshots — see "Play Store" section below, resume mid-fix
+3. Play Store screenshots — crop workaround verified and good to upload; native
+   Pixel_8 1080x1920 boot fix still open but low priority (see "Play Store" section)
 
 ## Play Store
 
 iOS app releasing separately; both share the same schedule JSON at
 `https://next-caltrain-pwa.appspot.com/schedule.json`.
 
-### Screenshots — IN PROGRESS (resume here)
+### Screenshots — WORKAROUND IN USE (native emulator resolution still unresolved)
 
-Captured screenshots via `./snap.sh` were rejected by Play Store requirements on
-two counts:
+Captured screenshots via `./snap.sh` were originally rejected by Play Store
+requirements on two counts:
 
 1. **Aspect ratio out of range.** The `Pixel_8` AVD's default resolution is
    1080x2400 (20:9 ≈ 2.22 height/width ratio). Play's cap is 16:9, which for a
@@ -217,12 +218,20 @@ two counts:
    — matches `docs/SCREENSHOTS.md`'s "Recommended phone size: 1080 x 1920").
 2. **Alpha channel present.** `adb exec-out screencap -p` outputs RGBA PNGs even
    though the content is fully opaque. Play Console rejects screenshots that
-   carry an alpha channel. **Not yet fixed** — needs a post-processing step
-   (likely `convert -alpha off` via ImageMagick, or `sips`) added to `snap.sh`
-   after the raw capture, before the file is saved. Unverified — confirm Play
-   Console actually still rejects it before assuming this is still needed.
+   carry an alpha channel.
 
-**Fixing the resolution — landmines hit along the way:**
+**Current workaround**: capture at the AVD's native 1080x2400 via `./snap.sh`,
+then manually crop each image down to 1080x1920. Verified on `pics/1920_HomeScreen.png`,
+`pics/1920_TripListScreen.png`, `pics/1920_TripDetailScreen.png` — all exactly
+1080x1920, RGB (no alpha channel), status bar intact at the top of the crop. This
+satisfies Play Store's aspect-ratio and alpha-channel rules and covers the
+≥2-screenshot minimum for the listing, so the cropped images are good to upload
+as-is.
+
+**Still open**: get the Pixel_8 AVD itself booting at 1080x1920 natively, so
+`snap.sh` doesn't need a manual crop step. Not urgent (the workaround unblocks the
+listing) but worth finishing so future screenshots don't need hand-cropping.
+Landmines hit so far attempting the native fix:
 
 - Editing `hw.lcd.height` in `~/.android/avd/Pixel_8.avd/config.ini` silently
   does nothing if its `key=value` formatting doesn't match the rest of the
@@ -253,14 +262,13 @@ no stray spaces). Cold-booted with:
 **Not yet confirmed**: whether the boot log's `Setting display: 0 configuration
 to:` line now reads `1080x1920` (still waiting on that output).
 
-**Next steps:**
+**Next steps (low priority — listing is already unblocked by the crop workaround):**
 1. Confirm the boot log shows `1080x1920`, not `1080x2400`.
 2. Recapture with `./snap.sh` and confirm dimensions on the output PNG
-   (`sips -g pixelWidth -g pixelHeight <file>` or similar).
-3. Check whether the alpha channel issue still applies to a fresh capture; if
-   so, add a strip-alpha step to `snap.sh` and re-verify.
-4. Capture the ≥2 required screenshots for the listing once both issues are
-   resolved.
+   (`sips -g pixelWidth -g pixelHeight <file>` or similar) — if native capture
+   already comes out 1080x1920, the manual crop step can be dropped.
+3. Check whether the alpha channel issue still applies to a fresh native capture;
+   if so, add a strip-alpha step to `snap.sh` and re-verify.
 
 ## iOS Reference
 
