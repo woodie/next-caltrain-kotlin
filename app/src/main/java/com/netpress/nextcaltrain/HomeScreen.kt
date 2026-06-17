@@ -112,10 +112,16 @@ fun HomeScreen(
             }
     ) {
         // Gradient background
+        // iOS draws this as LinearGradient(startPoint: .top, endPoint: .center) inside a
+        // 200pt frame — .top/.center are fractional anchors, so the fade completes by the
+        // frame's halfway point (100pt); the rest is flat appBackground. Compose's
+        // verticalGradient with no startY/endY spans the box's full height, so matching
+        // height(200.dp) here made the fade twice as tall as iOS. height(100.dp) reproduces
+        // the same pixels: the visible fade is the only part of the box that ever mattered.
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(100.dp)
                 .background(
                     brush = androidx.compose.ui.graphics.Brush.verticalGradient(
                         colors = listOf(Color(0xFF808080), colors.appBackground)

@@ -108,10 +108,14 @@ fun TripListScreen(
         } else 6
 
         // Gradient background
+        // Same fix as HomeScreen: iOS's LinearGradient(.top -> .center) inside a 200pt frame
+        // only fades across the first half (100pt) and is flat appBackground after that.
+        // Compose's verticalGradient with no startY/endY spans the full box height, so
+        // height(100.dp) is what reproduces iOS's actual fade extent.
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(100.dp)
                 .background(
                     brush = androidx.compose.ui.graphics.Brush.verticalGradient(
                         colors = listOf(Color(0xFF808080), colors.appBackground)
