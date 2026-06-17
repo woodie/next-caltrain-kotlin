@@ -199,13 +199,68 @@ build.sh / run.sh / test.sh
    for the same missing-`.background(colors.appBackground)` landmine)
 2. TripListScreen row tap routing — confirm tapping a row (not just drag) navigates to
    TripDetail correctly now that row width/centering changed
-3. Play Store screenshots
+3. Play Store screenshots — see "Play Store" section below, resume mid-fix
 
 ## Play Store
 
-Screenshots pending — waiting until all screens are polished.
 iOS app releasing separately; both share the same schedule JSON at
 `https://next-caltrain-pwa.appspot.com/schedule.json`.
+
+### Screenshots — IN PROGRESS (resume here)
+
+Captured screenshots via `./snap.sh` were rejected by Play Store requirements on
+two counts:
+
+1. **Aspect ratio out of range.** The `Pixel_8` AVD's default resolution is
+   1080x2400 (20:9 ≈ 2.22 height/width ratio). Play's cap is 16:9, which for a
+   1080px-wide screen means a max height of **1920** (1080 × 16/9 = 1920 exactly
+   — matches `docs/SCREENSHOTS.md`'s "Recommended phone size: 1080 x 1920").
+2. **Alpha channel present.** `adb exec-out screencap -p` outputs RGBA PNGs even
+   though the content is fully opaque. Play Console rejects screenshots that
+   carry an alpha channel. **Not yet fixed** — needs a post-processing step
+   (likely `convert -alpha off` via ImageMagick, or `sips`) added to `snap.sh`
+   after the raw capture, before the file is saved. Unverified — confirm Play
+   Console actually still rejects it before assuming this is still needed.
+
+**Fixing the resolution — landmines hit along the way:**
+
+- Editing `hw.lcd.height` in `~/.android/avd/Pixel_8.avd/config.ini` silently
+  does nothing if its `key=value` formatting doesn't match the rest of the
+  file. The emulator's ini parser appears to do an exact string match on the
+  key with no whitespace trimming — `hw.lcd.height = 1920` (spaces around `=`)
+  does not match `hw.lcd.height` and falls back to the device default (2400),
+  while `hw.lcd.density=420` and `hw.lcd.width=1080` (no spaces, untouched)
+  work fine. **Always write `hw.lcd.height=1920` with no spaces**, matching the
+  other lines exactly.
+- `config.ini` being correct doesn't guarantee the runtime picked it up —
+  `hardware-qemu.ini` (auto-generated fresh on each boot, not meant to be
+  hand-edited) is what's actually used. Cross-check the boot log's
+  `Setting display: 0 configuration to: ...` line, not just `config.ini`.
+- The `-no-skin` launch flag is obsolete/ignored in current emulator versions
+  (prints a warning, does nothing) — don't rely on it.
+- Must fully quit the running emulator (Cmd+Q the `qemu-system-aarch64`
+  process, or `adb -s emulator-5554 emu kill`) before relaunching — bringing an
+  already-running window back to front just shows the stale resolution, and
+  launching a second instance of the same AVD fails outright ("Running
+  multiple emulators with the same AVD is an experimental feature").
+
+**Status as of last session:** `config.ini` now correctly reads
+`hw.lcd.height=1920` (verified via `grep -n "lcd" ~/.android/avd/Pixel_8.avd/config.ini`,
+no stray spaces). Cold-booted with:
+```bash
+~/Library/Android/sdk/emulator/emulator -avd Pixel_8 -no-snapshot-load
+```
+**Not yet confirmed**: whether the boot log's `Setting display: 0 configuration
+to:` line now reads `1080x1920` (still waiting on that output).
+
+**Next steps:**
+1. Confirm the boot log shows `1080x1920`, not `1080x2400`.
+2. Recapture with `./snap.sh` and confirm dimensions on the output PNG
+   (`sips -g pixelWidth -g pixelHeight <file>` or similar).
+3. Check whether the alpha channel issue still applies to a fresh capture; if
+   so, add a strip-alpha step to `snap.sh` and re-verify.
+4. Capture the ≥2 required screenshots for the listing once both issues are
+   resolved.
 
 ## iOS Reference
 
