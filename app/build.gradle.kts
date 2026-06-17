@@ -29,6 +29,19 @@ val scheduleUrl: String = localProperties.getProperty("scheduleUrl")
     ?: defaultProperties.getProperty("scheduleUrl")
     ?: "https://next-caltrain-pwa.appspot.com/schedule.json"
 
+// Release signing. Keystore path + passwords are per-developer secrets that live only
+// in local.properties (gitignored) — never committed. If any of the four are missing,
+// the release build type compiles unsigned, which is fine for local testing but will
+// be rejected by Play Console on upload. See docs/CLAUDE.md "Release signing".
+val releaseStoreFile = localProperties.getProperty("RELEASE_STORE_FILE")
+val releaseStorePassword = localProperties.getProperty("RELEASE_STORE_PASSWORD")
+val releaseKeyAlias = localProperties.getProperty("RELEASE_KEY_ALIAS")
+val releaseKeyPassword = localProperties.getProperty("RELEASE_KEY_PASSWORD")
+val hasReleaseSigning = releaseStoreFile != null &&
+    releaseStorePassword != null &&
+    releaseKeyAlias != null &&
+    releaseKeyPassword != null
+
 android {
     namespace = "com.netpress.nextcaltrain"
     compileSdk {
@@ -45,8 +58,21 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "SCHEDULE_URL", "\"$scheduleUrl\"")
     }
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
     buildTypes {
         release {
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             optimization {
                 enable = false
             }

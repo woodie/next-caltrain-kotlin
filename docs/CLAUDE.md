@@ -30,6 +30,36 @@ Currently: `https://next-caltrain-pwa.appspot.com/schedule.json`.
 Times are minutes since midnight. Missing stops are null. See `docs/DESIGN.md`
 for full format.
 
+## Release signing
+
+Play Console requires every uploaded build to be signed with an upload key. The
+keystore and its passwords are per-developer secrets — they live only in
+`local.properties` (gitignored), never in source or committed config:
+
+```
+RELEASE_STORE_FILE=/absolute/path/to/next-caltrain-release.jks
+RELEASE_STORE_PASSWORD=...
+RELEASE_KEY_ALIAS=next-caltrain
+RELEASE_KEY_PASSWORD=...
+```
+
+If any of the four are missing, `app/build.gradle.kts` leaves the `release` build
+type unsigned — it still compiles fine for local testing, it just can't be uploaded
+to Play Console.
+
+To generate a keystore (one-time, run yourself — `keytool` prompts interactively
+for passwords so they never pass through a script or chat):
+```bash
+keytool -genkeypair -v -keystore ~/keystores/next-caltrain-release.jks \
+  -alias next-caltrain -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Store the resulting `.jks` file and its passwords somewhere durable (password
+manager + backed-up file) outside the repo. **If you lose it, you cannot publish
+updates to the existing Play Store listing ever again** — Play App Signing re-signs
+with Google's key, but it still requires your upload key to authenticate each
+upload.
+
 ## Current status
 
 All five screens (Home, TripList, TripDetail, StationSelection, About) are implemented,

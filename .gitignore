@@ -24,3 +24,8 @@ app/build/
 hs_err_pid*
 replay_pid*
 local.properties
+
+# Release signing — keystore must never be committed
+*.jks
+*.keystore
+keystore/
