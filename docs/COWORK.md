@@ -25,7 +25,7 @@ resolved with this precedence:
 3. A hardcoded literal in `build.gradle.kts` — last-resort safety net if both files are
    missing.
 
-Currently: `https://next-caltrain-pwa.appspot.com/schedule.json`.
+Currently: `https://next-caltrain-pwa.appspot.com/feed/schedule.json`.
 
 Times are minutes since midnight. Missing stops are null. See `docs/DESIGN.md`
 for full format.

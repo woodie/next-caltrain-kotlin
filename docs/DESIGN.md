@@ -22,12 +22,13 @@ three platforms. The Kotlin app is the fourth implementation.
 Schedule data is published as `schedule.json` at:
 
 ```
-https://next-caltrain-pwa.appspot.com/schedule.json
+https://next-caltrain-pwa.appspot.com/feed/schedule.json
 ```
 
 This file is shared by all clients (PWA, iOS, Android). It is generated from
-Caltrain GTFS CSVs by `tools/convert_schedule.py` in the iOS repo, then
-deployed from the PWA repo via `npm run deploy`.
+Caltrain GTFS CSVs by `update_json.py` in the PWA repo (the converter used to
+live in the iOS repo as `tools/convert_schedule.py`; it moved), then deployed
+via `npm run deploy`.
 
 ### Format
 

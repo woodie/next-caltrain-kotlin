@@ -27,7 +27,7 @@ val defaultProperties = Properties().apply {
 }
 val scheduleUrl: String = localProperties.getProperty("scheduleUrl")
     ?: defaultProperties.getProperty("scheduleUrl")
-    ?: "https://next-caltrain-pwa.appspot.com/schedule.json"
+    ?: "https://next-caltrain-pwa.appspot.com/feed/schedule.json"
 
 // Release signing. Keystore path + passwords are per-developer secrets that live only
 // in local.properties (gitignored) — never committed. If any of the four are missing,

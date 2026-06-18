@@ -205,7 +205,7 @@ build.sh / run.sh / test.sh
 ## Play Store
 
 iOS app releasing separately; both share the same schedule JSON at
-`https://next-caltrain-pwa.appspot.com/schedule.json`.
+`https://next-caltrain-pwa.appspot.com/feed/schedule.json`.
 
 ### Screenshots — WORKAROUND IN USE (native emulator resolution still unresolved)
 
