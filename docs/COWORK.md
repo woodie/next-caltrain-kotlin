@@ -1,4 +1,4 @@
-# COWORK — Next Caltrain Kotlin
+# Working with Next Caltrain Kotlin
 
 Quick context for starting a new session on this repo.
 
