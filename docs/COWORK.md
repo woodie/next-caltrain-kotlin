@@ -1,4 +1,4 @@
-# CLAUDE.md — Next Caltrain Kotlin
+# COWORK — Next Caltrain Kotlin
 
 Quick context for starting a new session on this repo.
 

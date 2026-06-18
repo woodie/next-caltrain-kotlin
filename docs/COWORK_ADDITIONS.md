@@ -1,4 +1,4 @@
-# Claude Session Handoff Notes
+# Cowork Session Handoff Notes
 
 This file captures project context for AI-assisted sessions, supplementing DEVELOPMENT.md.
 
