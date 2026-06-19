@@ -47,6 +47,12 @@ emulator or device.
 ## Running on the emulator
 
 ```
+./sim.sh
+```
+
+`sim.sh` launches the Android simulator then just leave it running.
+
+```
 ./build.sh && ./run.sh
 ```
 
