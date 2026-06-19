@@ -174,5 +174,42 @@ class TripViewModelSpec : DescribeSpec({
                 detailType shouldBe ScheduleType.WEEKEND
             }
         }
+
+        context("manual selection via setOffset") {
+            // Regression coverage for the reset-button-stuck-on bug: dragging
+            // away from the next train sets hasManualSelection, but dragging
+            // back to that same next-train offset should clear it again —
+            // otherwise the reset button stays visible even though the
+            // current selection is exactly the auto-picked "next train".
+            lateinit var viewModel: TripViewModel
+            beforeEach {
+                GoodTimes.debugOverrideDotw = 1 // Monday
+                GoodTimes.debugOverrideMinutes = 100
+                val schedule = SpecFixtures.schedule {
+                    weekday(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
+                    weekend(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
+                }
+                viewModel = makeViewModel(schedule, SpecFixtures.sanFrancisco, SpecFixtures.sanJoseDiridon)
+            }
+
+            it("flags manual selection when dragging to an offset other than nextIndex") {
+                viewModel.setOffset(viewModel.nextIndex.value + 1)
+                viewModel.hasManualSelection.shouldBeTrue()
+            }
+
+            it("clears manual selection when dragging back to the next train") {
+                viewModel.setOffset(viewModel.nextIndex.value + 1)
+                viewModel.hasManualSelection.shouldBeTrue()
+
+                viewModel.setOffset(viewModel.nextIndex.value)
+                viewModel.hasManualSelection.shouldBeFalse()
+            }
+
+            it("resetToNext() also clears manual selection") {
+                viewModel.setOffset(viewModel.nextIndex.value + 1)
+                viewModel.resetToNext()
+                viewModel.hasManualSelection.shouldBeFalse()
+            }
+        }
     }
 })

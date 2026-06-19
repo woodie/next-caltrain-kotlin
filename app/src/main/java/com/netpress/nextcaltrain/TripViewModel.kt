@@ -180,7 +180,7 @@ class TripViewModel(val schedule: Schedule, private val context: Context) : View
     }
 
     fun setOffset(newOffset: Int) {
-        userSelected = true
+        userSelected = (newOffset != _nextIndex.value)
         _offset.value = newOffset
     }
 
