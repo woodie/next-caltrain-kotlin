@@ -155,6 +155,15 @@ Claude has direct read/write access to this repo's working copy — it edits fil
 with its file tools (no download/move step), then runs `./gradlew clean test` to verify and
 commits directly with git. Commits go on `main` and are left unpushed unless asked to push.
 
+**Bugfixes and features tied to a GitHub issue go on a branch, not straight to
+`main`.** Create the branch (see pattern below), make the fix there, and stop —
+do not commit (even to the branch) until the user has discussed the fix and
+confirmed it actually works (ran the tests, tried it on device/emulator).
+Committing before that confirmation is exactly what we're avoiding; the user
+pushes, reviews, and merges into `main` themselves once satisfied.
+Direct-to-`main` commits are still fine for changes that don't need that
+back-and-forth (docs, copy, config).
+
 Branches tied to GitHub issues, when used:
 ```
 feature/29-append-tomorrow-trips
