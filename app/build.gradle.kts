@@ -177,7 +177,7 @@ tasks.withType<Test> {
                 // one of those, unconditionally (including the first), so each suite's
                 // block visually stands apart from whatever came before it.
                 if (depth == 0) println()
-                println("  ".repeat(depth + 1) + ancestors[depth])
+                println("  ".repeat(depth) + ancestors[depth])
             }
 
             // Mocha's own spec reporter colors the checkmark green and dims the title
@@ -190,10 +190,10 @@ tasks.withType<Test> {
                 else ->
                     ansi(RED, "✖ ${testDescriptor.name}")
             }
-            println("  ".repeat(ancestors.size + 1) + line)
+            println("  ".repeat(ancestors.size) + line)
             if (result.resultType == TestResult.ResultType.FAILURE) {
                 result.exceptions.forEach { e ->
-                    println("  ".repeat(ancestors.size + 2) + ansi(RED, e.message ?: e.toString()))
+                    println("  ".repeat(ancestors.size + 1) + ansi(RED, e.message ?: e.toString()))
                 }
             }
 
