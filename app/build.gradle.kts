@@ -1,4 +1,7 @@
 import java.util.Properties
+import org.gradle.api.tasks.testing.TestDescriptor
+import org.gradle.api.tasks.testing.TestListener
+import org.gradle.api.tasks.testing.TestResult
 
 plugins {
     alias(libs.plugins.android.application)
@@ -116,7 +119,93 @@ dependencies {
 }
 tasks.withType<Test> {
     useJUnitPlatform()
-    testLogging {
-        events("passed", "failed", "skipped")
+
+    // Custom RSpec/ginkgo-fd-style console reporter, replacing gradle-test-logger-plugin.
+    // The plugin's mocha theme gave genuine nested indentation with checkmarks (the
+    // shape we want) but inserts a blank line between every describe/context group,
+    // hardcoded into its theme with no config flag to disable. This hooks Gradle's own
+    // TestListener API directly -- the same mechanism the plugin itself uses under the
+    // hood -- to walk the real nested TestDescriptor.parent chain and print a dense
+    // tree with no blank-line padding, plus one "N passing (Xs)" summary per run.
+    //
+    // Gradle's tree has two synthetic wrapper suites above the real top-level describe()
+    // ("Gradle Test Run :app:..." and "Gradle Test Executor N"); ancestry() filters those
+    // out by name prefix, which is the standard trick for custom Gradle test listeners.
+    var passed = 0
+    var failed = 0
+    var skipped = 0
+    var lastPath: List<String> = emptyList()
+    val runStart = System.currentTimeMillis()
+
+    // Respect the NO_COLOR convention (https://no-color.org/) for anyone piping
+    // this into a log file or a terminal that mangles escape codes.
+    val colorEnabled = System.getenv("NO_COLOR") == null
+    val RESET = "[0m"
+    val GREEN = "[32m"
+    val RED = "[31m"
+    val CYAN = "[36m"
+    val GRAY = "[90m"
+    fun ansi(code: String, text: String) = if (colorEnabled) "$code$text$RESET" else text
+
+    fun ancestry(descriptor: TestDescriptor): List<String> {
+        val names = mutableListOf<String>()
+        var d = descriptor.parent
+        while (d != null) {
+            if (!d.name.startsWith("Gradle Test")) names.add(0, d.name)
+            d = d.parent
+        }
+        return names
+    }
+
+    addTestListener(object : TestListener {
+        override fun beforeSuite(suite: TestDescriptor) {}
+        override fun afterSuite(suite: TestDescriptor, result: TestResult) {}
+        override fun beforeTest(testDescriptor: TestDescriptor) {}
+
+        override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
+            val ancestors = ancestry(testDescriptor)
+            val path = ancestors + testDescriptor.name
+
+            // Print only the part of the path not already printed for the previous
+            // test -- the "dedupe shared prefix" trick that produces a real nested
+            // tree from a flat stream of leaf-test callbacks, with no blank lines.
+            val shared = path.zip(lastPath).takeWhile { (a, b) -> a == b }.count()
+            for (depth in shared until ancestors.size) {
+                println("  ".repeat(depth + 1) + ancestors[depth])
+            }
+
+            // Mocha's own spec reporter colors the checkmark green and dims the title
+            // for passes; failures and pending get a single solid color instead.
+            val line = when (result.resultType) {
+                TestResult.ResultType.SUCCESS ->
+                    "${ansi(GREEN, "✔")} ${ansi(GRAY, testDescriptor.name)}"
+                TestResult.ResultType.SKIPPED ->
+                    ansi(CYAN, "○ ${testDescriptor.name}")
+                else ->
+                    ansi(RED, "✖ ${testDescriptor.name}")
+            }
+            println("  ".repeat(ancestors.size + 1) + line)
+            if (result.resultType == TestResult.ResultType.FAILURE) {
+                result.exceptions.forEach { e ->
+                    println("  ".repeat(ancestors.size + 2) + ansi(RED, e.message ?: e.toString()))
+                }
+            }
+
+            when (result.resultType) {
+                TestResult.ResultType.SUCCESS -> passed++
+                TestResult.ResultType.SKIPPED -> skipped++
+                else -> failed++
+            }
+            lastPath = path
+        }
+    })
+
+    doLast {
+        val elapsed = (System.currentTimeMillis() - runStart) / 1000.0
+        val parts = mutableListOf(ansi(GREEN, "$passed passing"))
+        if (failed > 0) parts.add(ansi(RED, "$failed failing"))
+        if (skipped > 0) parts.add(ansi(CYAN, "$skipped pending"))
+        println()
+        println("  ${parts.joinToString(", ")} (${"%.1f".format(elapsed)}s)")
     }
 }
