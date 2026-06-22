@@ -114,6 +114,22 @@ app/src/test/java/com/netpress/nextcaltrain/
 ./gradlew clean test
 ```
 
+### Test output formatting
+
+`app/build.gradle.kts` registers a custom Gradle `TestListener` (replacing
+`gradle-test-logger-plugin`) that prints a real nested describe/context/it tree
+straight from `TestDescriptor.parent`, with terminal colors matching Mocha's
+spec reporter — green ✔ + dimmed name on pass, solid red ✖ + red exception
+detail on failure, solid cyan ○ on skip — plus a final "N passing (Xs)"
+summary line. Unlike the old plugin's mocha theme, there's no blank line
+between groups. Set `NO_COLOR=1` to disable the ANSI codes (e.g. piping to a
+file). See the comment block above the listener in `build.gradle.kts` for the
+"dedupe shared prefix" trick that turns Gradle's flat `afterTest` callbacks
+into a dense tree.
+
+This is considered done. The Swift sibling (`next-caltrain-swift`) has the
+opposite problem — see its `docs/COWORK.md` "Test output formatting" section.
+
 ## Install and run on emulator
 ```bash
 ./gradlew installDebug && ~/Library/Android/sdk/platform-tools/adb shell am start -n com.netpress.nextcaltrain/.MainActivity
