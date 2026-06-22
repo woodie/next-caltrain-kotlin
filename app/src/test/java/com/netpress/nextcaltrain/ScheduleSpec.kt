@@ -7,6 +7,7 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.mockk.every
 import io.mockk.mockk
+import java.util.Calendar
 
 /**
  * Covers Schedule.fetchedToday() -- the once-per-day fetch cap that lets
@@ -30,6 +31,17 @@ class ScheduleSpec : DescribeSpec({
         return context
     }
 
+    // Fixed at noon on an arbitrary date, well clear of the 2am schedule-day
+    // boundary in either direction. Tests pin "now" explicitly via fetchedToday's
+    // nowMillis param instead of System.currentTimeMillis(), so results don't
+    // depend on what time the suite happens to run.
+    fun fixedNoon(): Long {
+        val cal = Calendar.getInstance()
+        cal.set(2024, Calendar.JANUARY, 15, 12, 0, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        return cal.timeInMillis
+    }
+
     describe("Schedule.fetchedToday") {
         context("when nothing has ever been fetched") {
             it("returns false") {
@@ -39,15 +51,17 @@ class ScheduleSpec : DescribeSpec({
 
         context("when the last fetch was a few minutes ago") {
             it("returns true") {
-                val recent = System.currentTimeMillis() - 5 * 60 * 1000L
-                Schedule.fetchedToday(contextWithLastFetch(recent)).shouldBeTrue()
+                val now = fixedNoon()
+                val recent = now - 5 * 60 * 1000L
+                Schedule.fetchedToday(contextWithLastFetch(recent), now).shouldBeTrue()
             }
         }
 
         context("when the last fetch was more than a day ago") {
             it("returns false") {
-                val stale = System.currentTimeMillis() - 26 * 60 * 60 * 1000L
-                Schedule.fetchedToday(contextWithLastFetch(stale)).shouldBeFalse()
+                val now = fixedNoon()
+                val stale = now - 26 * 60 * 60 * 1000L
+                Schedule.fetchedToday(contextWithLastFetch(stale), now).shouldBeFalse()
             }
         }
     }
