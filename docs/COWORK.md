@@ -121,14 +121,23 @@ app/src/test/java/com/netpress/nextcaltrain/
 straight from `TestDescriptor.parent`, with terminal colors matching Mocha's
 spec reporter — green ✔ + dimmed name on pass, solid red ✖ + red exception
 detail on failure, solid cyan ○ on skip — plus a final "N passing (Xs)"
-summary line. Unlike the old plugin's mocha theme, there's no blank line
-between groups. Set `NO_COLOR=1` to disable the ANSI codes (e.g. piping to a
-file). See the comment block above the listener in `build.gradle.kts` for the
-"dedupe shared prefix" trick that turns Gradle's flat `afterTest` callbacks
-into a dense tree.
+summary line. Unlike the old plugin's mocha theme, which hardcoded a blank
+line between every nested describe/context group, this one only blank-lines
+before each top-level suite (see below) — nested groups within a suite still
+print with no padding. Set `NO_COLOR=1` to disable the ANSI codes (e.g. piping
+to a file). See the comment block above the listener in `build.gradle.kts` for
+the "dedupe shared prefix" trick that turns Gradle's flat `afterTest`
+callbacks into a dense tree.
 
-This is considered done. The Swift sibling (`next-caltrain-swift`) has the
-opposite problem — see its `docs/COWORK.md` "Test output formatting" section.
+A blank line is also printed before every top-level suite line (the
+`com.netpress.nextcaltrain.*` class name), unconditionally — including the
+very first one in the run — so each suite's block visually stands apart from
+whatever preceded it.
+
+The Swift sibling (`next-caltrain-swift`) does the same dedupe-and-render
+trick, plus the same unconditional blank-line-before-suite rule, from the
+opposite starting point — see its `docs/COWORK.md` "Test output formatting"
+section.
 
 ## Install and run on emulator
 ```bash

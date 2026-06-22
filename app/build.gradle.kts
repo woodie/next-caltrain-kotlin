@@ -171,6 +171,12 @@ tasks.withType<Test> {
             // tree from a flat stream of leaf-test callbacks, with no blank lines.
             val shared = path.zip(lastPath).takeWhile { (a, b) -> a == b }.count()
             for (depth in shared until ancestors.size) {
+                // depth == 0 here means ancestors[0] -- the fully-qualified spec class
+                // name (e.g. com.netpress.nextcaltrain.CaltrainScheduleSpec) -- is about
+                // to be printed for a new top-level suite. A blank line goes before every
+                // one of those, unconditionally (including the first), so each suite's
+                // block visually stands apart from whatever came before it.
+                if (depth == 0) println()
                 println("  ".repeat(depth + 1) + ancestors[depth])
             }
 
