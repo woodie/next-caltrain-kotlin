@@ -29,3 +29,8 @@ local.properties
 *.jks
 *.keystore
 keystore/
+
+# Personal convenience symlinks (editor/terminal shortcuts to nested source dirs).
+# Not portable across machines/OSes, so kept local-only.
+/Sources
+/Tests
