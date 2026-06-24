@@ -25,12 +25,7 @@ import com.netpress.nextcaltrain.ui.theme.LocalAppColors
 
 enum class StopRole { PAST, ORIGIN, DESTINATION, TRANSFER, FUTURE }
 
-data class TripStop(
-    val time: Int,
-    val station: String,
-    val role: StopRole,
-    val transferLabel: String? = null,
-)
+data class TripStop(val time: Int, val station: String, val role: StopRole, val transferLabel: String? = null)
 
 fun computeStops(
     trip: Trip,
@@ -71,10 +66,7 @@ fun computeStops(
 }
 
 @Composable
-fun TripDetailScreen(
-    vm: TripViewModel,
-    onNavigateBack: () -> Unit,
-) {
+fun TripDetailScreen(vm: TripViewModel, onNavigateBack: () -> Unit) {
     val detailState by vm.tripDetailState.collectAsStateWithLifecycle()
     val goodTimes by vm.goodTimes.collectAsStateWithLifecycle()
     val colors = LocalAppColors.current
@@ -95,14 +87,14 @@ fun TripDetailScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.appBackground)
+            .background(colors.appBackground),
     ) {
         // Toolbar — back button left, title centered
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .windowInsetsPadding(
-                    WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                    WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -165,7 +157,7 @@ private fun StopRow(
     stop: TripStop,
     isFirst: Boolean,
     isLast: Boolean,
-    lineColor: androidx.compose.ui.graphics.Color,    // time-based color for line above dot
+    lineColor: androidx.compose.ui.graphics.Color, // time-based color for line above dot
     nextTrackColor: androidx.compose.ui.graphics.Color, // time-based color for line below dot
     colors: com.netpress.nextcaltrain.ui.theme.AppColors,
 ) {
@@ -175,7 +167,7 @@ private fun StopRow(
         else -> lineColor
     }
     val dotSizeDp = 16.dp
-    val dotOffsetYDp = 7.dp   // centers dot in the 30dp row: (30-16)/2 = 7
+    val dotOffsetYDp = 7.dp // centers dot in the 30dp row: (30-16)/2 = 7
     val textOffsetYDp = 2.dp
     val rowHeightDp = 30.dp
 
@@ -201,7 +193,7 @@ private fun StopRow(
         Canvas(
             modifier = Modifier
                 .width(dotSizeDp)
-                .height(rowHeightDp)   // explicit height — fillMaxHeight() is unreliable here
+                .height(rowHeightDp), // explicit height — fillMaxHeight() is unreliable here
         ) {
             val cx = size.width / 2f
             val dotR = dotSizeDp.toPx() / 2f

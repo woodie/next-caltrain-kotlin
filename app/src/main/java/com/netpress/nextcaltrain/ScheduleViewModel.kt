@@ -49,6 +49,7 @@ class ScheduleViewModel : ViewModel() {
                 cached != null && Schedule.fetchedToday(context) -> {
                     LoadState.Ready(cached)
                 }
+
                 cached == null -> {
                     try {
                         LoadState.Ready(Schedule.fetchFromNetwork(context))
@@ -56,6 +57,7 @@ class ScheduleViewModel : ViewModel() {
                         LoadState.Error
                     }
                 }
+
                 else -> {
                     try {
                         withTimeout(10_000L) {

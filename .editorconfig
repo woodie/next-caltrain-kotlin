@@ -1,0 +1,66 @@
+root = true
+
+# IntelliJ's default formatting style rather than ktlint's own stricter
+# "ktlint_official" style (the default since ktlint 1.0). Turns off a batch
+# of ktlint_official-only rules that were fighting short, readable code in
+# this project: forced multiline function signatures at >=2 params,
+# multiline-expression-wrapping (`x =\n    call(...)`), and if-else-wrapping/
+# multiline-if-else (forcing braces on single-line if/else). See
+# https://pinterest.github.io/ktlint/1.0.0/rules/standard/ for the list of
+# rules gated behind ktlint_official. Must live under a [glob] section --
+# ktlint's editorconfig parser doesn't apply bare properties that precede
+# the first section header (only `root` is recognized up there).
+[*.{kt,kts}]
+ktlint_code_style = intellij_idea
+
+# IntelliJ's actual default right margin. Without this, max_line_length is
+# unbounded, so rules like standard:function-signature treat every line as
+# "fits" and cram signature + body expression onto one (sometimes very long)
+# line instead of wrapping. This also turns on standard:max-line-length
+# itself, which was previously not enforced at all.
+max_line_length = 120
+
+# Composable functions are PascalCase by Compose convention (they're UI
+# elements, not regular functions) -- standard:function-naming doesn't know
+# this and would otherwise rename AboutScreen/HomeScreen/TripDetailScreen/etc
+# to lowerCamelCase, breaking every call site and fighting Compose tooling.
+# Added in ktlint 1.0.1 for exactly this case.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+
+# Allow semicolon-joined one-liners (e.g. `val o = origin.value; val d = destination.value`
+# in HomeScreen.kt, or test beforeEach hooks like
+# `GoodTimes.debugOverrideMinutes = 720; gt = GoodTimes()`). standard:statement-wrapping
+# otherwise requires each statement on its own line and forbids inline lambda
+# bodies -- both of which this convention relies on, in app code and specs alike.
+ktlint_standard_statement-wrapping = disabled
+
+# This project's const vals mirror the iOS Swift codebase's `let` naming
+# (e.g. CaltrainService.kt's transferStation, TripViewModel.kt's dayMinutes,
+# SpecFixtures.kt's sanFrancisco) -- Swift uses camelCase `let`, not
+# SCREAMING_SNAKE_CASE, so matching ktlint's const-naming convention here
+# would break that 1:1 parity throughout the codebase.
+ktlint_standard_property-naming = disabled
+
+# Compose's foundation.layout and runtime packages are the two wildcard imports
+# every screen needs (Box/Column/Row/Spacer/WindowInsets/the size-and-padding
+# Modifier extensions from the former; Composable/remember/mutableStateOf/
+# getValue+setValue from the latter). Spelling all of that out per-file is
+# exactly the noise standard:no-wildcard-imports exists to prevent everywhere
+# else -- this is the IntelliJ-recognized exception list for "allow import
+# on demand here," not a blanket opt-out (no-wildcard-imports still applies
+# to every other package).
+ij_kotlin_packages_to_use_import_on_demand = androidx.compose.foundation.layout.*,androidx.compose.runtime.*
+
+# Keep `class FooSpec : DescribeSpec({` on one line. standard:class-signature
+# forces a newline before any supertype, even a single zero-arg one, which
+# just indents the entire Kotest body for no readability benefit. There's no
+# finer-grained knob for this -- ktlint's own maintainers confirmed a full
+# rule disable is the only workaround (pinterest/ktlint#2902) -- and other
+# Kotest codebases hitting the same rule disable it the same way. Scoped to
+# *Spec.kt only -- Sources/ classes still get class-signature's normal
+# fit-on-one-line-if-it-fits behavior (e.g. TripDetailState). Matched by
+# filename rather than the app/src/test/... path, since Tests/ is a symlink
+# into that directory and .editorconfig section globs match the literal path
+# given, not the resolved symlink target.
+[**/*Spec.kt]
+ktlint_standard_class-signature = disabled

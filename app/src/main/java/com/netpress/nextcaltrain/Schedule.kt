@@ -28,6 +28,7 @@ data class Schedule(
         private val REMOTE_URL = BuildConfig.SCHEDULE_URL
         private const val CACHE_FILE = "schedule.json"
         private const val FETCH_TIMEOUT_MS = 10_000
+
         // internal (not private) so unit tests can build a fake SharedPreferences
         // keyed the same way as production, instead of hardcoding magic strings.
         internal const val PREFS_NAME = "nextcaltrain"
@@ -65,8 +66,8 @@ data class Schedule(
                 .apply()
         }
 
-        suspend fun fetchFromNetwork(context: Context): Schedule {
-            return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        suspend fun fetchFromNetwork(context: Context): Schedule =
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                 val url = URL(REMOTE_URL)
                 val connection = url.openConnection() as HttpURLConnection
                 connection.connectTimeout = FETCH_TIMEOUT_MS
@@ -86,7 +87,6 @@ data class Schedule(
                     connection.disconnect()
                 }
             }
-        }
 
         private fun fromJson(json: JSONObject): Schedule {
             fun parseStops(key: String): List<String> {

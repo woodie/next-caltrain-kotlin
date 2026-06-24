@@ -47,7 +47,7 @@ fun AboutScreen(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .windowInsetsPadding(
-                        WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                        WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
                     )
                     .padding(top = 8.dp)
                     .size(AppStyle.iconButtonSizeDp.dp)

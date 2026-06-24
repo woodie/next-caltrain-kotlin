@@ -38,8 +38,8 @@ class CaltrainScheduleSpec : DescribeSpec({
 
             context("with a special date matching today") {
                 val specialDates = mapOf(
-                    "2026-07-04" to 1,  // Weekend override
-                    "2026-12-25" to 2,  // Holiday
+                    "2026-07-04" to 1, // Weekend override
+                    "2026-12-25" to 2, // Holiday
                 )
 
                 context("when the special date maps to WEEKEND") {

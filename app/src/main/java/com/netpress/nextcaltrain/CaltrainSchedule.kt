@@ -3,12 +3,13 @@ package com.netpress.nextcaltrain
 enum class ScheduleType(val label: String) {
     WEEKDAY("Weekday"),
     WEEKEND("Weekend"),
-    HOLIDAY("Holiday");
+    HOLIDAY("Holiday"),
+    ;
 
     companion object {
         fun fromInt(value: Int): ScheduleType = when (value) {
-            1    -> WEEKEND
-            2    -> HOLIDAY
+            1 -> WEEKEND
+            2 -> HOLIDAY
             else -> WEEKDAY
         }
     }

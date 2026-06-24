@@ -52,7 +52,7 @@ fun TripListScreen(
     var dragShift by remember { mutableIntStateOf(0) }
     var accumulatedDrag by remember { mutableFloatStateOf(0f) }
     var headerHeightPx by remember { mutableFloatStateOf(0f) }
-    val rowHeightDp = 42.dp  // tightened leading to match iOS; must track TripRow's padding below
+    val rowHeightDp = 42.dp // tightened leading to match iOS; must track TripRow's padding below
     val rowHeightPx = with(density) { rowHeightDp.toPx() }
 
     // Actual measured height of a rendered TripRow, used for tap/drag slot math instead of
@@ -99,13 +99,15 @@ fun TripListScreen(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.appBackground)
+            .background(colors.appBackground),
     ) {
         val screenHeightPx = constraints.maxHeight.toFloat()
         val rowCount = if (headerHeightPx > 0) {
             val available = screenHeightPx - headerHeightPx
             minOf(maxOf(1, (available / rowHeightPx).toInt()), maxOf(trips.size, 1))
-        } else 6
+        } else {
+            6
+        }
 
         // Gradient background
         // Same fix as HomeScreen: iOS's LinearGradient(.top -> .center) inside a 200pt frame
@@ -118,25 +120,24 @@ fun TripListScreen(
                 .height(100.dp)
                 .background(
                     brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                        colors = listOf(Color(0xFF808080), colors.appBackground)
-                    )
-                )
+                        colors = listOf(Color(0xFF808080), colors.appBackground),
+                    ),
+                ),
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
-
             // ── Header ──────────────────────────────────────────────────────
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .onGloballyPositioned { headerHeightPx = it.size.height.toFloat() }
+                    .onGloballyPositioned { headerHeightPx = it.size.height.toFloat() },
             ) {
                 // Row 1: service type + swap/reset buttons
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .windowInsetsPadding(
-                            WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                            WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
                         )
                         .padding(horizontal = 16.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -175,7 +176,11 @@ fun TripListScreen(
                             .clip(CircleShape)
                             .background(colors.iconCircleBackground),
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.CompareArrows, contentDescription = "Swap", tint = colors.appText)
+                        Icon(
+                            Icons.AutoMirrored.Filled.CompareArrows,
+                            contentDescription = "Swap",
+                            tint = colors.appText,
+                        )
                     }
                 }
 
@@ -202,8 +207,20 @@ fun TripListScreen(
                             detectTapGestures { onNavigateToStationSelection() }
                         },
                     ) {
-                        Text(line1, fontSize = AppStyle.fontOrigin, color = colors.appText, maxLines = 1, softWrap = false)
-                        Text(line2, fontSize = AppStyle.fontOrigin, color = colors.appText, maxLines = 1, softWrap = false)
+                        Text(
+                            line1,
+                            fontSize = AppStyle.fontOrigin,
+                            color = colors.appText,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
+                        Text(
+                            line2,
+                            fontSize = AppStyle.fontOrigin,
+                            color = colors.appText,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     // Balance the back button
@@ -224,7 +241,7 @@ fun TripListScreen(
                         color = statusColor,
                         softWrap = false,
                         modifier = Modifier.alpha(
-                            if ((isSelectedDeparting || noTrains) && !blinkOn) 0f else 1f
+                            if ((isSelectedDeparting || noTrains) && !blinkOn) 0f else 1f,
                         ),
                     )
                 }

@@ -39,10 +39,12 @@ fun NextCaltrainApp() {
 
     when (val state = loadState) {
         is LoadState.Loading -> AboutScreen(scheduleDate = null, isLoading = true, loadFailed = false, onBack = null)
-        is LoadState.Error   -> AboutScreen(scheduleDate = null, isLoading = true, loadFailed = true, onBack = null)
-        is LoadState.Ready   -> {
+
+        is LoadState.Error -> AboutScreen(scheduleDate = null, isLoading = true, loadFailed = true, onBack = null)
+
+        is LoadState.Ready -> {
             val vm: TripViewModel = viewModel(
-                factory = TripViewModelFactory(state.schedule, context)
+                factory = TripViewModelFactory(state.schedule, context),
             )
             val navController = rememberNavController()
 

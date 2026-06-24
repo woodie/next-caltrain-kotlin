@@ -32,10 +32,7 @@ import com.netpress.nextcaltrain.ui.theme.AppStyle
 import com.netpress.nextcaltrain.ui.theme.LocalAppColors
 
 @Composable
-fun StationSelectionScreen(
-    vm: TripViewModel,
-    onNavigateBack: () -> Unit,
-) {
+fun StationSelectionScreen(vm: TripViewModel, onNavigateBack: () -> Unit) {
     val origin by vm.origin.collectAsStateWithLifecycle()
     val destination by vm.destination.collectAsStateWithLifecycle()
     val colors = LocalAppColors.current
@@ -84,14 +81,14 @@ fun StationSelectionScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.appBackground)
+            .background(colors.appBackground),
     ) {
         // Toolbar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .windowInsetsPadding(
-                    WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                    WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
                 )
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,

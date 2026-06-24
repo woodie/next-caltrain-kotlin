@@ -11,12 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-data class TripDetailState(
-    val trip: Trip,
-    val origin: String,
-    val destination: String,
-    val scheduleType: ScheduleType,
-)
+data class TripDetailState(val trip: Trip, val origin: String, val destination: String, val scheduleType: ScheduleType)
 
 class TripViewModel(val schedule: Schedule, private val context: Context) : ViewModel() {
 

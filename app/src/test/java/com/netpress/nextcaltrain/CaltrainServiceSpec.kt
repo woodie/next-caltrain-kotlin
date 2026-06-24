@@ -29,7 +29,7 @@ class CaltrainServiceSpec : DescribeSpec({
                 val dir = CaltrainService.direction(
                     SpecFixtures.sanFrancisco,
                     SpecFixtures.gilroy,
-                    SpecFixtures.stops
+                    SpecFixtures.stops,
                 )
                 dir shouldBe "South"
             }
@@ -37,7 +37,7 @@ class CaltrainServiceSpec : DescribeSpec({
                 val dir = CaltrainService.direction(
                     SpecFixtures.gilroy,
                     SpecFixtures.sanFrancisco,
-                    SpecFixtures.stops
+                    SpecFixtures.stops,
                 )
                 dir shouldBe "North"
             }
@@ -51,7 +51,7 @@ class CaltrainServiceSpec : DescribeSpec({
                 val routes = service.routes(
                     SpecFixtures.sanFrancisco,
                     SpecFixtures.sanJoseDiridon,
-                    ScheduleType.WEEKDAY
+                    ScheduleType.WEEKDAY,
                 )
                 it("returns trips") { routes.shouldNotBeEmpty() }
                 it("each trip is a direct route (one leg)") {
@@ -68,7 +68,7 @@ class CaltrainServiceSpec : DescribeSpec({
                 val routes = service.routes(
                     SpecFixtures.morganHill,
                     SpecFixtures.gilroy,
-                    ScheduleType.WEEKDAY
+                    ScheduleType.WEEKDAY,
                 )
                 it("returns direct trips (both SC, no transfer needed)") {
                     routes.shouldNotBeEmpty()
@@ -92,7 +92,7 @@ class CaltrainServiceSpec : DescribeSpec({
                 val routes = service.routes(
                     SpecFixtures.sanFrancisco,
                     SpecFixtures.gilroy,
-                    ScheduleType.WEEKDAY
+                    ScheduleType.WEEKDAY,
                 )
                 it("returns trips") { routes.shouldNotBeEmpty() }
                 it("each trip is a transfer (two legs)") {
@@ -115,7 +115,7 @@ class CaltrainServiceSpec : DescribeSpec({
                 val routes = service.routes(
                     SpecFixtures.gilroy,
                     SpecFixtures.sanFrancisco,
-                    ScheduleType.WEEKDAY
+                    ScheduleType.WEEKDAY,
                 )
                 it("returns trips") { routes.shouldNotBeEmpty() }
                 it("each trip is a transfer (two legs)") {
@@ -138,7 +138,7 @@ class CaltrainServiceSpec : DescribeSpec({
                     val routes = CaltrainService(schedule).routes(
                         SpecFixtures.sanFrancisco,
                         SpecFixtures.gilroy,
-                        ScheduleType.WEEKEND
+                        ScheduleType.WEEKEND,
                     )
                     routes.shouldBeEmpty()
                 }
@@ -151,7 +151,7 @@ class CaltrainServiceSpec : DescribeSpec({
             val trips = service.routes(
                 SpecFixtures.sanFrancisco,
                 SpecFixtures.sanJoseDiridon,
-                ScheduleType.WEEKDAY
+                ScheduleType.WEEKDAY,
             )
 
             it("returns 0 when current time is before all trips") {

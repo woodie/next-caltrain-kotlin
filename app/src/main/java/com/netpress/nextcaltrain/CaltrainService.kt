@@ -6,16 +6,16 @@ package com.netpress.nextcaltrain
 data class Leg(
     val trainId: Int,
     val station: String,
-    val depart: Int,  // minutes since midnight
+    val depart: Int, // minutes since midnight
 )
 
 /**
  * A trip with one or two legs. Two legs = transfer at San Jose Diridon.
  */
 data class Trip(
-    val id: Int,          // lead train ID
+    val id: Int, // lead train ID
     val legs: List<Leg>,
-    val arrive: Int,      // arrival at final destination (minutes since midnight)
+    val arrive: Int, // arrival at final destination (minutes since midnight)
     val isFuture: Boolean = false,
 ) {
     val depart: Int get() = legs.first().depart
@@ -30,7 +30,11 @@ class CaltrainService(private val schedule: Schedule) {
 
     companion object {
         val southCountyStations: Set<String> = setOf(
-            "Gilroy", "San Martin", "Morgan Hill", "Blossom Hill", "Capitol"
+            "Gilroy",
+            "San Martin",
+            "Morgan Hill",
+            "Blossom Hill",
+            "Capitol",
         )
         const val transferStation = "San Jose Diridon"
 
@@ -42,7 +46,7 @@ class CaltrainService(private val schedule: Schedule) {
             trainId > 500 -> "Express"
             trainId > 400 -> "Limited"
             trainId > 100 -> "Local"
-            else          -> "Unknown"
+            else -> "Unknown"
         }
 
         fun direction(from: String, to: String, stops: List<String>): String {
@@ -56,8 +60,7 @@ class CaltrainService(private val schedule: Schedule) {
         val fromIsSC = southCountyStations.contains(from)
         val toIsSC = southCountyStations.contains(to)
         val needsTransfer = scheduleType == ScheduleType.WEEKDAY && (fromIsSC != toIsSC)
-        return if (needsTransfer) transferRoutes(from, to, scheduleType)
-               else directRoutes(from, to, scheduleType)
+        return if (needsTransfer) transferRoutes(from, to, scheduleType) else directRoutes(from, to, scheduleType)
     }
 
     fun nextIndex(trips: List<Trip>, minutes: Int): Int =
@@ -188,10 +191,9 @@ class CaltrainService(private val schedule: Schedule) {
         return trips.sortedBy { it.depart }
     }
 
-    private fun select(direction: String, scheduleType: ScheduleType): Map<String, List<Int?>> =
-        when (scheduleType) {
-            ScheduleType.WEEKDAY -> if (direction == "North") schedule.northWeekday else schedule.southWeekday
-            ScheduleType.WEEKEND -> if (direction == "North") schedule.northWeekend else schedule.southWeekend
-            ScheduleType.HOLIDAY -> if (direction == "North") schedule.northHoliday else schedule.southHoliday
-        }
+    private fun select(direction: String, scheduleType: ScheduleType): Map<String, List<Int?>> = when (scheduleType) {
+        ScheduleType.WEEKDAY -> if (direction == "North") schedule.northWeekday else schedule.southWeekday
+        ScheduleType.WEEKEND -> if (direction == "North") schedule.northWeekend else schedule.southWeekend
+        ScheduleType.HOLIDAY -> if (direction == "North") schedule.northHoliday else schedule.southHoliday
+    }
 }

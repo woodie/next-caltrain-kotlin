@@ -31,13 +31,12 @@ class TripViewModelSpec : DescribeSpec({
     // in init{}. A relaxed mock answers every unstubbed call with the type's default
     // (0 for the stored AM/PM stop indices), which is fine here since every test
     // immediately overwrites origin/destination via setOrigin/setDestination anyway.
-    fun makeViewModel(schedule: Schedule, origin: String, destination: String): TripViewModel {
-        return TripViewModel(schedule, mockk<Context>(relaxed = true)).apply {
+    fun makeViewModel(schedule: Schedule, origin: String, destination: String): TripViewModel =
+        TripViewModel(schedule, mockk<Context>(relaxed = true)).apply {
             setOrigin(origin)
             setDestination(destination)
             refresh()
         }
-    }
 
     describe("TripViewModel") {
 
@@ -169,8 +168,7 @@ class TripViewModelSpec : DescribeSpec({
             }
             it("correct schedule type for detail view is tomorrowScheduleType") {
                 val trip = viewModel.trips.value[viewModel.offset.value]
-                val detailType = if (trip.isFuture) viewModel.tomorrowScheduleType
-                                 else viewModel.scheduleType.value
+                val detailType = if (trip.isFuture) viewModel.tomorrowScheduleType else viewModel.scheduleType.value
                 detailType shouldBe ScheduleType.WEEKEND
             }
         }

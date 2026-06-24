@@ -107,9 +107,9 @@ fun HomeScreen(
                         vm.setOffset(finalOffset)
                         dragShift = 0
                         accumulatedDrag = 0f
-                    }
+                    },
                 )
-            }
+            },
     ) {
         // Gradient background
         // iOS draws this as LinearGradient(startPoint: .top, endPoint: .center) inside a
@@ -124,9 +124,9 @@ fun HomeScreen(
                 .height(100.dp)
                 .background(
                     brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                        colors = listOf(Color(0xFF808080), colors.appBackground)
-                    )
-                )
+                        colors = listOf(Color(0xFF808080), colors.appBackground),
+                    ),
+                ),
         )
 
         // Toolbar — fixed at top, own layer
@@ -140,7 +140,7 @@ fun HomeScreen(
                 // landscape), which otherwise covers this row's trailing swap icon.
                 // Pad for both without adding an unnecessary bottom inset in portrait.
                 .windowInsetsPadding(
-                    WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+                    WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
                 )
                 .align(Alignment.TopStart),
             verticalAlignment = Alignment.CenterVertically,
@@ -151,7 +151,7 @@ fun HomeScreen(
                 color = colors.appText,
                 maxLines = 1,
                 modifier = Modifier
-                    .pointerInput(Unit) { detectTapGestures { onNavigateToAbout?.invoke() } }
+                    .pointerInput(Unit) { detectTapGestures { onNavigateToAbout?.invoke() } },
             )
             Spacer(modifier = Modifier.weight(1f))
             if (vm.hasManualSelection) {
@@ -188,12 +188,12 @@ fun HomeScreen(
         Canvas(
             modifier = Modifier
                 .size(250.dp)
-                .align(Alignment.Center)
+                .align(Alignment.Center),
         ) {
             drawCircle(
                 color = ringColor,
                 radius = size.minDimension / 2 - 5.dp.toPx(),
-                style = Stroke(width = 5.dp.toPx())
+                style = Stroke(width = 5.dp.toPx()),
             )
         }
 
@@ -210,7 +210,7 @@ fun HomeScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.pointerInput(Unit) {
                     detectTapGestures { onNavigateToStationSelection?.invoke() }
-                }
+                },
             ) {
                 Text(
                     line1,
@@ -237,12 +237,14 @@ fun HomeScreen(
                     softWrap = false,
                     modifier = Modifier.alpha(if (blinkOn) 1f else 0f),
                 )
+
                 isSelectedFuture -> Text(
                     vm.tomorrowScheduleType.label,
                     fontSize = AppStyle.fontBlurb,
                     color = colors.calPast,
                     softWrap = false,
                 )
+
                 isSelectedDeparting -> Text(
                     "DEPARTING",
                     fontSize = AppStyle.fontBlurb,
@@ -250,12 +252,14 @@ fun HomeScreen(
                     softWrap = false,
                     modifier = Modifier.alpha(if (blinkOn) 1f else 0f),
                 )
+
                 vm.swapped || isSelectedPast -> Text(
                     scheduleType.label,
                     fontSize = AppStyle.fontBlurb,
                     color = colors.calPast,
                     softWrap = false,
                 )
+
                 selectedTrip != null -> {
                     val c = goodTimes.countdown(selectedTrip.depart)
                     if (c.isNotEmpty()) {

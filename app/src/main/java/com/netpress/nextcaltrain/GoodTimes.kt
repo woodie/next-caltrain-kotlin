@@ -63,8 +63,7 @@ data class GoodTimes(
          * the same "day starts at 2am" rule as invoke(): subtract 2 hours before formatting.
          * Lets us compare "today" against a stored last-fetch timestamp for the
          * once-per-day schedule fetch policy. */
-        fun scheduleDateFor(epochMillis: Long): String =
-            dateFmt.format(Date(epochMillis - 2 * 60 * 60 * 1000L))
+        fun scheduleDateFor(epochMillis: Long): String = dateFmt.format(Date(epochMillis - 2 * 60 * 60 * 1000L))
 
         fun partTime(minutes: Int): Pair<String, String> {
             var hrs = (minutes / 60) % 24
@@ -92,9 +91,9 @@ data class GoodTimes(
     fun countdown(target: Int): String {
         val diff = target - minutes - 1
         return when {
-            diff < 0  -> ""
+            diff < 0 -> ""
             diff > 59 -> "in ${diff / 60} hr ${diff % 60} min"
-            else      -> "in $diff min ${60 - seconds} sec"
+            else -> "in $diff min ${60 - seconds} sec"
         }
     }
 }
