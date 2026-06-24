@@ -85,6 +85,11 @@ UI architecture decisions. Outstanding work is UI polish, not missing features.
 - `HomeScreen.kt`, `TripListScreen.kt`, `TripDetailScreen.kt`, `StationSelectionScreen.kt`
 - Tests — Kotest DescribeSpec for all data layer classes + ViewModel/fetch-cap logic
   (MockK for mocking `Context`/`SharedPreferences`)
+- `.editorconfig` — ktlint rule overrides (IntelliJ code style instead of
+  ktlint_official, 120-char line limit, `@Composable` naming exception, and
+  a few other project-specific disables). Repo linted/formatted against it.
+  Run `ktlint` / `ktlint -F`; see `docs/DEVELOPMENT.md` "Linting" for setup
+  and the file's own comments for the reasoning behind each override.
 
 ### Known gaps
 - `ScheduleViewModel.ensureLoaded()` (the rotation-survival logic above) has no test
@@ -113,6 +118,17 @@ app/src/test/java/com/netpress/nextcaltrain/
 ```bash
 ./gradlew clean test
 ```
+
+To run a single spec class:
+```bash
+./test.sh GoodTimesSpec
+```
+A bare class name (no leading dash) is translated under the hood into
+Kotest's own `kotest_filter_specs` env var — Gradle's `--tests` filter
+doesn't work reliably against Kotest specs, so `test.sh` bypasses it
+entirely. See `docs/DEVELOPMENT.md` "Running a single spec" for
+fully-qualified names, wildcards, and the `kotest_filter_tests` variant
+(filters by individual `it` name).
 
 ### Test output formatting
 
