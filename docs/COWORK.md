@@ -120,14 +120,33 @@ app/src/test/java/com/netpress/nextcaltrain/
 `gradle-test-logger-plugin`) that prints a real nested describe/context/it tree
 straight from `TestDescriptor.parent`, with terminal colors matching Mocha's
 spec reporter — green ✔ + dimmed name on pass, solid red ✖ + red exception
-detail on failure, solid cyan ○ on skip — plus a final "N passing (Xs)"
-summary line. Unlike the old plugin's mocha theme, which hardcoded a blank
-line between every nested describe/context group, this one only blank-lines
-before each top-level suite (see below) — nested groups within a suite still
-print with no padding. Set `NO_COLOR=1` to disable the ANSI codes (e.g. piping
-to a file). See the comment block above the listener in `build.gradle.kts` for
-the "dedupe shared prefix" trick that turns Gradle's flat `afterTest`
-callbacks into a dense tree.
+detail on failure, solid cyan ○ on skip. Unlike the old plugin's mocha theme,
+which hardcoded a blank line between every nested describe/context group,
+this one only blank-lines before each top-level suite (see below) — nested
+groups within a suite still print with no padding. Set `NO_COLOR=1` to
+disable the ANSI codes (e.g. piping to a file). See the comment block above
+the listener in `build.gradle.kts` for the "dedupe shared prefix" trick that
+turns Gradle's flat `afterTest` callbacks into a dense tree.
+
+There's no custom "N passing (Xs)" summary line at the end — there used to
+be, but it relied on a `val runStart = System.currentTimeMillis()` set at
+Gradle configuration time, which goes stale (sometimes by hours) whenever
+`org.gradle.configuration-cache=true` reuses a cached configuration instead
+of re-running it, producing nonsense elapsed times like `72 passing
+(113516.7s)`. Rather than chase that down further, the summary line was
+dropped — Gradle's own `BUILD SUCCESSFUL`/`BUILD FAILED` is the whole footer
+now.
+
+That footer still includes a `Configuration cache entry stored/reused.`
+line. `test.sh` deliberately does NOT pipe `./gradlew clean test` through
+`grep`/`sed` to filter it out: piping makes Gradle's stdout a non-tty, which
+drops it out of rich console mode and into plain mode, printing a
+`> Task :app:xxx` line for every one of the ~27 tasks instead of collapsing
+the silent ones — far noisier than the one line it would remove. Gradle also
+has no dedicated flag to silence just that notice without affecting
+`BUILD SUCCESSFUL`/`actionable tasks` too (open issue:
+[gradle/gradle#24435](https://github.com/gradle/gradle/issues/24435)), so it
+stays.
 
 A blank line is also printed before every top-level suite line (the
 `com.netpress.nextcaltrain.*` class name), unconditionally — including the

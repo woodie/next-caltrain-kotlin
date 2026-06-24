@@ -126,16 +126,13 @@ tasks.withType<Test> {
     // hardcoded into its theme with no config flag to disable. This hooks Gradle's own
     // TestListener API directly -- the same mechanism the plugin itself uses under the
     // hood -- to walk the real nested TestDescriptor.parent chain and print a dense
-    // tree with no blank-line padding, plus one "N passing (Xs)" summary per run.
+    // tree with no blank-line padding. No final summary line of our own -- Gradle's
+    // own "BUILD SUCCESSFUL"/"BUILD FAILED" already closes out the run.
     //
     // Gradle's tree has two synthetic wrapper suites above the real top-level describe()
     // ("Gradle Test Run :app:..." and "Gradle Test Executor N"); ancestry() filters those
     // out by name prefix, which is the standard trick for custom Gradle test listeners.
-    var passed = 0
-    var failed = 0
-    var skipped = 0
     var lastPath: List<String> = emptyList()
-    val runStart = System.currentTimeMillis()
 
     // Respect the NO_COLOR convention (https://no-color.org/) for anyone piping
     // this into a log file or a terminal that mangles escape codes.
@@ -155,6 +152,17 @@ tasks.withType<Test> {
             d = d.parent
         }
         return names
+    }
+
+    // Reset dedupe state at actual task-execution time, not here at
+    // configuration time. With org.gradle.configuration-cache=true (see
+    // gradle.properties), a cache hit skips re-running this whole
+    // tasks.withType<Test> block, so state captured directly in a `val`
+    // above would carry over stale from whenever the cache entry was first
+    // written. doFirst always re-runs on every invocation regardless of
+    // config-cache state, so this is the one place safe to reset from.
+    doFirst {
+        lastPath = emptyList()
     }
 
     addTestListener(object : TestListener {
@@ -197,21 +205,7 @@ tasks.withType<Test> {
                 }
             }
 
-            when (result.resultType) {
-                TestResult.ResultType.SUCCESS -> passed++
-                TestResult.ResultType.SKIPPED -> skipped++
-                else -> failed++
-            }
             lastPath = path
         }
     })
-
-    doLast {
-        val elapsed = (System.currentTimeMillis() - runStart) / 1000.0
-        val parts = mutableListOf(ansi(GREEN, "$passed passing"))
-        if (failed > 0) parts.add(ansi(RED, "$failed failing"))
-        if (skipped > 0) parts.add(ansi(CYAN, "$skipped pending"))
-        println()
-        println("  ${parts.joinToString(", ")} (${"%.1f".format(elapsed)}s)")
-    }
 }
