@@ -1,5 +1,6 @@
 # next-caltrain-kotlin
 
+![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg)
 [![License](https://img.shields.io/github/license/woodie/next-caltrain-kotlin.svg)](LICENSE)
 
 Live countdown to your next Caltrain, with automatic schedule detection.
