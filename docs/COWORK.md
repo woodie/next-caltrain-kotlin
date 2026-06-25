@@ -232,6 +232,21 @@ bugfix/12-remove-unused-rowwidthkey
 
 Pattern: `{type}/{issue-number}-{short-description}`
 
+### Stale-looking git lock errors
+
+If `git add`/`git commit` fails with `Unable to create '.git/index.lock'`
+(or `HEAD.lock`) `: File exists`, it's almost never a real stale lock from a
+crashed git process — `ps aux` will show nothing running, and `rm -f` on the
+lock file fails with `Operation not permitted` even though ownership and
+permissions look completely normal. This repo's working copy is a folder
+mounted into Cowork's sandbox from the user's actual machine, and deleting
+files there requires explicit one-time permission per session. Call the
+`allow_cowork_file_delete` tool with the lock file's path; once granted, `rm
+-f .git/*.lock` succeeds immediately and the commit can be retried. The
+permission covers the whole mounted folder, so if a second lock file shows up
+(e.g. `HEAD.lock` after clearing `index.lock`) it can just be removed too, no
+need to ask again.
+
 ## Sibling repo paths
 
 ```
