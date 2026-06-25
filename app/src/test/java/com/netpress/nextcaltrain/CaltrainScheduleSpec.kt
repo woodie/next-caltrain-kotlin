@@ -63,9 +63,10 @@ class CaltrainScheduleSpec : DescribeSpec({
             }
 
             context("with an invalid special date value") {
+                val specialDates = mapOf("2026-06-17" to 99)
+                val result = CaltrainSchedule.optionIndexFor("2026-06-17", 3, specialDates)
+
                 it("falls back to WEEKDAY") {
-                    val specialDates = mapOf("2026-06-17" to 99)
-                    val result = CaltrainSchedule.optionIndexFor("2026-06-17", 3, specialDates)
                     result shouldBe ScheduleType.WEEKDAY
                 }
             }
@@ -73,26 +74,26 @@ class CaltrainScheduleSpec : DescribeSpec({
 
         describe(".forTomorrow()") {
             context("when today is Friday (5)") {
+                GoodTimes.debugOverrideDotw = 5
+                val result = CaltrainSchedule.forTomorrow(GoodTimes(), emptyMap())
+
                 it("returns WEEKEND for tomorrow (Saturday)") {
-                    GoodTimes.debugOverrideDotw = 5
-                    val gt = GoodTimes()
-                    val result = CaltrainSchedule.forTomorrow(gt, emptyMap())
                     result shouldBe ScheduleType.WEEKEND
                 }
             }
             context("when today is Sunday (0)") {
+                GoodTimes.debugOverrideDotw = 0
+                val result = CaltrainSchedule.forTomorrow(GoodTimes(), emptyMap())
+
                 it("returns WEEKDAY for tomorrow (Monday)") {
-                    GoodTimes.debugOverrideDotw = 0
-                    val gt = GoodTimes()
-                    val result = CaltrainSchedule.forTomorrow(gt, emptyMap())
                     result shouldBe ScheduleType.WEEKDAY
                 }
             }
             context("when today is Thursday (4)") {
+                GoodTimes.debugOverrideDotw = 4
+                val result = CaltrainSchedule.forTomorrow(GoodTimes(), emptyMap())
+
                 it("returns WEEKDAY for tomorrow (Friday)") {
-                    GoodTimes.debugOverrideDotw = 4
-                    val gt = GoodTimes()
-                    val result = CaltrainSchedule.forTomorrow(gt, emptyMap())
                     result shouldBe ScheduleType.WEEKDAY
                 }
             }

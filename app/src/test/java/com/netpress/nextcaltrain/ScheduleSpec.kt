@@ -44,25 +44,25 @@ class ScheduleSpec : DescribeSpec({
 
     describe("Schedule.fetchedToday") {
         context("when nothing has ever been fetched") {
-            it("returns false") {
-                Schedule.fetchedToday(contextWithLastFetch(null)).shouldBeFalse()
-            }
+            val result = Schedule.fetchedToday(contextWithLastFetch(null))
+
+            it("returns false") { result.shouldBeFalse() }
         }
 
         context("when the last fetch was a few minutes ago") {
-            it("returns true") {
-                val now = fixedNoon()
-                val recent = now - 5 * 60 * 1000L
-                Schedule.fetchedToday(contextWithLastFetch(recent), now).shouldBeTrue()
-            }
+            val now = fixedNoon()
+            val recent = now - 5 * 60 * 1000L
+            val result = Schedule.fetchedToday(contextWithLastFetch(recent), now)
+
+            it("returns true") { result.shouldBeTrue() }
         }
 
         context("when the last fetch was more than a day ago") {
-            it("returns false") {
-                val now = fixedNoon()
-                val stale = now - 26 * 60 * 60 * 1000L
-                Schedule.fetchedToday(contextWithLastFetch(stale), now).shouldBeFalse()
-            }
+            val now = fixedNoon()
+            val stale = now - 26 * 60 * 60 * 1000L
+            val result = Schedule.fetchedToday(contextWithLastFetch(stale), now)
+
+            it("returns false") { result.shouldBeFalse() }
         }
     }
 })

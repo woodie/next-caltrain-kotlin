@@ -13,23 +13,30 @@ class GoodTimesSpec : DescribeSpec({
     describe("GoodTimes") {
         lateinit var gt: GoodTimes
 
-        describe(".fullTime()") {
-            lateinit var result: String
-            context("when given noon") {
-                beforeEach { result = GoodTimes.fullTime(720) } // noon
-
-                it("returns '12:00pm'") {
-                    result shouldBe "12:00pm"
-                }
-            }
-        }
-
         describe(".partTime()") {
             context("when given a morning time") {
                 val (t, mer) = GoodTimes.partTime(330) // 5:30am
 
                 it("returns the time and 'am'") {
                     t shouldBe "5:30"
+                    mer shouldBe "am"
+                }
+            }
+
+            context("when given noon") {
+                val (t, mer) = GoodTimes.partTime(720) // noon
+
+                it("returns 12:00 and 'pm'") {
+                    t shouldBe "12:00"
+                    mer shouldBe "pm"
+                }
+            }
+
+            context("when given midnight") {
+                val (t, mer) = GoodTimes.partTime(0) // 12:00am
+
+                it("returns 12:00 and 'am'") {
+                    t shouldBe "12:00"
                     mer shouldBe "am"
                 }
             }
@@ -44,15 +51,6 @@ class GoodTimesSpec : DescribeSpec({
             }
 
             context("when given a tomorrow-shifted time (>= 1440)") {
-                context("at 1620 (27:00)") {
-                    val (t, mer) = GoodTimes.partTime(1620)
-
-                    it("wraps to 3:00am") {
-                        t shouldBe "3:00"
-                        mer shouldBe "am"
-                    }
-                }
-
                 context("at 1740 (29:00)") {
                     val (t, mer) = GoodTimes.partTime(1740)
 
@@ -61,22 +59,24 @@ class GoodTimesSpec : DescribeSpec({
                         mer shouldBe "am"
                     }
                 }
-            }
 
-            context("when given midnight") {
-                val (t, mer) = GoodTimes.partTime(0) // 12:00am
+                context("at 1620 (27:00)") {
+                    val (t, mer) = GoodTimes.partTime(1620)
 
-                it("returns 12:00 and 'am'") {
-                    t shouldBe "12:00"
-                    mer shouldBe "am"
+                    it("wraps to 3:00am") {
+                        t shouldBe "3:00"
+                        mer shouldBe "am"
+                    }
                 }
             }
-            context("when given noon") {
-                val (t, mer) = GoodTimes.partTime(720) // noon
+        }
 
-                it("returns 12:00 and 'pm'") {
-                    t shouldBe "12:00"
-                    mer shouldBe "pm"
+        describe(".fullTime()") {
+            context("when given noon") {
+                val result = GoodTimes.fullTime(720) // noon
+
+                it("returns '12:00pm'") {
+                    result shouldBe "12:00pm"
                 }
             }
         }
