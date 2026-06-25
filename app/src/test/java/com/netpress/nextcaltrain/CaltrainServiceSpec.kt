@@ -4,8 +4,7 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldBeEmpty
-import io.kotest.matchers.collections.shouldNotBeEmpty
-import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 
 class CaltrainServiceSpec : DescribeSpec({
@@ -25,121 +24,154 @@ class CaltrainServiceSpec : DescribeSpec({
         }
 
         describe(".direction()") {
-            it("returns South when origin index < destination index") {
+            context("when traveling from San Francisco to Gilroy") {
                 val dir = CaltrainService.direction(
                     SpecFixtures.sanFrancisco,
                     SpecFixtures.gilroy,
                     SpecFixtures.stops,
                 )
-                dir shouldBe "South"
+
+                it("is South") {
+                    dir shouldBe "South"
+                }
             }
-            it("returns North when origin index > destination index") {
+
+            context("when traveling from Gilroy to San Francisco") {
                 val dir = CaltrainService.direction(
                     SpecFixtures.gilroy,
                     SpecFixtures.sanFrancisco,
                     SpecFixtures.stops,
                 )
-                dir shouldBe "North"
+
+                it("is North") {
+                    dir shouldBe "North"
+                }
             }
         }
 
-        describe("#routes() direct routes") {
+        describe("#routes()") {
             val schedule = SpecFixtures.weekdayOnlySchedule()
             val service = CaltrainService(schedule)
 
-            context("SF -> SJD on Weekday") {
+            context("for a direct electric trip (San Francisco to San Jose Diridon)") {
                 val routes = service.routes(
                     SpecFixtures.sanFrancisco,
                     SpecFixtures.sanJoseDiridon,
                     ScheduleType.WEEKDAY,
                 )
-                it("returns trips") { routes.shouldNotBeEmpty() }
-                it("each trip is a direct route (one leg)") {
-                    routes.forEach { it.isTransfer.shouldBeFalse() }
+
+                it("returns one direct trip") {
+                    routes shouldHaveSize 1
                 }
-                it("trips are sorted by departure time") {
-                    for (i in 1 until routes.size) {
-                        routes[i].depart shouldBeGreaterThanOrEqual routes[i - 1].depart
-                    }
+                it("is not a transfer") {
+                    routes.first().isTransfer.shouldBeFalse()
+                }
+                it("uses the electric southbound train") {
+                    routes.first().id shouldBe SpecFixtures.electricSouthTrainId
+                }
+                it("departs and arrives at the scheduled times") {
+                    routes.first().depart shouldBe 480
+                    routes.first().arrive shouldBe 510
                 }
             }
 
-            context("Morgan Hill -> Gilroy on Weekday") {
+            context("for a direct diesel trip (Morgan Hill to Gilroy)") {
                 val routes = service.routes(
                     SpecFixtures.morganHill,
                     SpecFixtures.gilroy,
                     ScheduleType.WEEKDAY,
                 )
-                it("returns direct trips (both SC, no transfer needed)") {
-                    routes.shouldNotBeEmpty()
-                    routes.forEach { it.isTransfer.shouldBeFalse() }
+
+                it("returns one direct trip") {
+                    routes shouldHaveSize 1
+                }
+                it("is not a transfer, since both endpoints are South County") {
+                    routes.first().isTransfer.shouldBeFalse()
+                }
+                it("uses the diesel southbound train") {
+                    routes.first().id shouldBe SpecFixtures.dieselSouthTrainId
                 }
             }
 
-            context("unknown station") {
-                it("returns empty") {
-                    val routes = service.routes("Unknown", SpecFixtures.gilroy, ScheduleType.WEEKDAY)
+            context("for an unknown station") {
+                val routes = service.routes("Unknown", SpecFixtures.gilroy, ScheduleType.WEEKDAY)
+
+                it("returns no trips") {
                     routes.shouldBeEmpty()
                 }
             }
-        }
 
-        describe("#routes() transfer routes") {
-            val schedule = SpecFixtures.weekdayOnlySchedule()
-            val service = CaltrainService(schedule)
-
-            context("southbound SF -> Gilroy on Weekday") {
+            context("for a transfer trip (San Francisco to Gilroy)") {
                 val routes = service.routes(
                     SpecFixtures.sanFrancisco,
                     SpecFixtures.gilroy,
                     ScheduleType.WEEKDAY,
                 )
-                it("returns trips") { routes.shouldNotBeEmpty() }
-                it("each trip is a transfer (two legs)") {
-                    routes.forEach { it.isTransfer.shouldBeTrue() }
+
+                it("returns one trip") {
+                    routes shouldHaveSize 1
                 }
-                it("lead train is electric (non-South County)") {
-                    routes.forEach { CaltrainService.isSouthCounty(it.id).shouldBeFalse() }
+                it("is a transfer") {
+                    routes.first().isTransfer.shouldBeTrue()
                 }
-                it("second leg train is South County") {
-                    routes.forEach { CaltrainService.isSouthCounty(it.legs[1].trainId).shouldBeTrue() }
+                it("has two legs") {
+                    routes.first().legs shouldHaveSize 2
                 }
-                it("trips are sorted by departure time") {
-                    for (i in 1 until routes.size) {
-                        routes[i].depart shouldBeGreaterThanOrEqual routes[i - 1].depart
-                    }
+                it("starts with the electric train from San Francisco") {
+                    val leg1 = routes.first().legs[0]
+                    leg1.trainId shouldBe SpecFixtures.electricSouthTrainId
+                    leg1.station shouldBe SpecFixtures.sanFrancisco
+                    leg1.depart shouldBe 480
+                }
+                it("connects to the diesel train at San Jose Diridon") {
+                    val leg2 = routes.first().legs[1]
+                    leg2.trainId shouldBe SpecFixtures.dieselSouthTrainId
+                    leg2.station shouldBe SpecFixtures.sanJoseDiridon
+                    leg2.depart shouldBe 515
+                }
+                it("arrives in Gilroy at the diesel train's scheduled time") {
+                    routes.first().arrive shouldBe 545
                 }
             }
 
-            context("northbound Gilroy -> SF on Weekday") {
+            context("for a transfer trip (Gilroy to San Francisco)") {
                 val routes = service.routes(
                     SpecFixtures.gilroy,
                     SpecFixtures.sanFrancisco,
                     ScheduleType.WEEKDAY,
                 )
-                it("returns trips") { routes.shouldNotBeEmpty() }
-                it("each trip is a transfer (two legs)") {
-                    routes.forEach { it.isTransfer.shouldBeTrue() }
+
+                it("returns one trip") {
+                    routes shouldHaveSize 1
                 }
-                it("lead train is South County") {
-                    routes.forEach { CaltrainService.isSouthCounty(it.id).shouldBeTrue() }
+                it("is a transfer") {
+                    routes.first().isTransfer.shouldBeTrue()
                 }
-                it("second leg train is electric") {
-                    routes.forEach { CaltrainService.isSouthCounty(it.legs[1].trainId).shouldBeFalse() }
+                it("starts with the diesel train from Gilroy") {
+                    val leg1 = routes.first().legs[0]
+                    leg1.trainId shouldBe SpecFixtures.dieselNorthTrainId
+                    leg1.station shouldBe SpecFixtures.gilroy
+                    leg1.depart shouldBe 420
+                }
+                it("connects to the electric train at San Jose Diridon") {
+                    val leg2 = routes.first().legs[1]
+                    leg2.trainId shouldBe SpecFixtures.electricNorthTrainId
+                    leg2.station shouldBe SpecFixtures.sanJoseDiridon
+                    leg2.depart shouldBe 520
+                }
+                it("arrives in San Francisco at the electric train's scheduled time") {
+                    routes.first().arrive shouldBe 550
                 }
             }
 
-            context("SF -> Gilroy on Weekend") {
-                it("returns no trips (no South County weekend service)") {
-                    val schedule = SpecFixtures.schedule {
-                        weekday(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
-                        weekend(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NONE)
-                    }
-                    val routes = CaltrainService(schedule).routes(
-                        SpecFixtures.sanFrancisco,
-                        SpecFixtures.gilroy,
-                        ScheduleType.WEEKEND,
-                    )
+            context("for a route with no service (weekend, empty fixture tables)") {
+                val routes = service.routes(
+                    SpecFixtures.sanFrancisco,
+                    SpecFixtures.gilroy,
+                    ScheduleType.WEEKEND,
+                )
+
+                it("returns no trips") {
                     routes.shouldBeEmpty()
                 }
             }
@@ -148,22 +180,55 @@ class CaltrainServiceSpec : DescribeSpec({
         describe("#nextIndex()") {
             val schedule = SpecFixtures.weekdayOnlySchedule()
             val service = CaltrainService(schedule)
-            val trips = service.routes(
-                SpecFixtures.sanFrancisco,
-                SpecFixtures.sanJoseDiridon,
-                ScheduleType.WEEKDAY,
-            )
 
-            it("returns 0 when current time is before all trips") {
-                service.nextIndex(trips, 0) shouldBe 0
+            context("when no trips have departed yet") {
+                val trips = service.routes(
+                    SpecFixtures.sanFrancisco,
+                    SpecFixtures.sanJoseDiridon,
+                    ScheduleType.WEEKDAY,
+                )
+                val index = service.nextIndex(trips, 0)
+
+                it("returns 0") {
+                    index shouldBe 0
+                }
             }
-            it("returns trips.size when current time is after all trips") {
-                service.nextIndex(trips, 9999) shouldBe trips.size
+
+            context("when all trips have already departed") {
+                val trips = service.routes(
+                    SpecFixtures.sanFrancisco,
+                    SpecFixtures.sanJoseDiridon,
+                    ScheduleType.WEEKDAY,
+                )
+                val index = service.nextIndex(trips, 1000)
+
+                it("returns the trip count") {
+                    index shouldBe trips.size
+                }
             }
-            it("returns the index of the first trip at or after current time") {
+
+            context("when given an empty trip list") {
+                val index = service.nextIndex(emptyList(), 500)
+
+                it("returns 0") {
+                    index shouldBe 0
+                }
+            }
+
+            context("when the current time is exactly at the first trip's departure") {
+                val trips = service.routes(
+                    SpecFixtures.sanFrancisco,
+                    SpecFixtures.sanJoseDiridon,
+                    ScheduleType.WEEKDAY,
+                )
                 val firstDepart = trips.first().depart
-                service.nextIndex(trips, firstDepart) shouldBe 0
-                service.nextIndex(trips, firstDepart + 1) shouldBe 1
+
+                it("returns the index of that trip") {
+                    service.nextIndex(trips, firstDepart) shouldBe 0
+                }
+                it("returns the next index one minute later") {
+                    service.nextIndex(trips, firstDepart + 1) shouldBe 1
+                }
             }
         }
     }
