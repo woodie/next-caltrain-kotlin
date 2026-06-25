@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          # Matches gradle/gradle-daemon-jvm.properties (toolchainVersion=21).
+          java-version: "21"
+
+      - name: Run tests
+        # Kotest DescribeSpec classes run on the plain JVM (MockK stands in
+        # for Context/SharedPreferences) -- no emulator/instrumented tests
+        # here, so ubuntu-latest's pre-installed Android SDK is enough to
+        # satisfy compileSdk without an emulator step.
+        run: ./gradlew clean test
