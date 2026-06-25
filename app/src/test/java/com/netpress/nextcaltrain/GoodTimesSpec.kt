@@ -10,38 +10,38 @@ import java.util.Calendar
 
 class GoodTimesSpec : DescribeSpec({
 
-    afterEach {
-        GoodTimes.debugOverrideMinutes = null
-        GoodTimes.debugOverrideDotw = null
-    }
-
     describe("GoodTimes") {
+        lateinit var gt: GoodTimes
 
         describe(".partTime()") {
             context("when given a morning time") {
+                val (t, mer) = GoodTimes.partTime(330) // 5:30am
+
                 it("returns the time and 'am'") {
-                    val (t, mer) = GoodTimes.partTime(330) // 5:30am
                     t shouldBe "5:30"
                     mer shouldBe "am"
                 }
             }
             context("when given noon") {
+                val (t, mer) = GoodTimes.partTime(720) // noon
+
                 it("returns 12:00 and 'pm'") {
-                    val (t, mer) = GoodTimes.partTime(720)
                     t shouldBe "12:00"
                     mer shouldBe "pm"
                 }
             }
             context("when given midnight") {
+                val (t, mer) = GoodTimes.partTime(0) // 12:00am
+
                 it("returns 12:00 and 'am'") {
-                    val (t, mer) = GoodTimes.partTime(0)
                     t shouldBe "12:00"
                     mer shouldBe "am"
                 }
             }
             context("when given a tomorrow-shifted time at 1740 (29:00)") {
+                val (t, mer) = GoodTimes.partTime(1740)
+
                 it("wraps to 5:00am") {
-                    val (t, mer) = GoodTimes.partTime(1740)
                     t shouldBe "5:00"
                     mer shouldBe "am"
                 }
@@ -49,74 +49,107 @@ class GoodTimesSpec : DescribeSpec({
         }
 
         describe(".fullTime()") {
+            lateinit var result: String
             context("when given noon") {
+                beforeEach { result = GoodTimes.fullTime(720) } // noon
+
                 it("returns '12:00pm'") {
-                    GoodTimes.fullTime(720) shouldBe "12:00pm"
+                    result shouldBe "12:00pm"
                 }
             }
         }
 
         context("when 'now' is fixed via debugOverrideMinutes") {
-            beforeEach { GoodTimes.debugOverrideMinutes = 720 }
+            var minutes = 0
+            beforeEach { GoodTimes.debugOverrideMinutes = 720; gt = GoodTimes() }
 
             describe("#inThePast()") {
-                it("returns true when the target is before now") {
-                    val gt = GoodTimes()
-                    gt.inThePast(gt.minutes - 2).shouldBeTrue()
+                context("when the target is before now") {
+                    beforeEach { minutes = gt.minutes - 2 }
+
+                    it("returns true") {
+                        gt.inThePast(minutes).shouldBeTrue()
+                    }
                 }
-                it("returns false when the target is after now") {
-                    val gt = GoodTimes()
-                    gt.inThePast(gt.minutes + 2).shouldBeFalse()
+
+                context("when the target is after now") {
+                    beforeEach { minutes = gt.minutes + 2 }
+
+                    it("returns false") {
+                        gt.inThePast(gt.minutes + 2).shouldBeFalse()
+                    }
                 }
             }
 
             describe("#departing()") {
-                it("returns true when the target equals now") {
-                    val gt = GoodTimes()
-                    gt.departing(gt.minutes).shouldBeTrue()
+                context("when the target equals now") {
+                    beforeEach { minutes = gt.minutes }
+
+                    it("returns true") {
+                        gt.departing(minutes).shouldBeTrue()
+                    }
                 }
-                it("returns false when the target does not equal now") {
-                    val gt = GoodTimes()
-                    gt.departing(gt.minutes + 1).shouldBeFalse()
+
+                context("when the target does not equal now") {
+                    beforeEach { minutes = gt.minutes + 1 }
+
+                    it("returns false") {
+                        gt.departing(gt.minutes + 1).shouldBeFalse()
+                    }
                 }
             }
 
             describe("#countdown()") {
-                it("returns empty string for a past target") {
-                    val gt = GoodTimes()
-                    gt.countdown(gt.minutes - 1) shouldBe ""
+                context("when the target is in the past") {
+                    beforeEach { minutes = gt.minutes - 1 }
+
+                    it("returns an empty string") {
+                        gt.countdown(minutes) shouldBe ""
+                    }
                 }
-                it("formats as 'in N hr M min' when over an hour away") {
-                    val gt = GoodTimes()
-                    gt.countdown(gt.minutes + 66) shouldBe "in 1 hr 5 min"
+
+                context("when the target is more than an hour away") {
+                    beforeEach { minutes = gt.minutes + 66 }
+
+                    it("formats as 'in N hr M min'") {
+                        gt.countdown(gt.minutes + 66) shouldBe "in 1 hr 5 min"
+                    }
                 }
-                it("formats as 'in N min M sec' when under an hour away") {
-                    val gt = GoodTimes()
-                    gt.countdown(gt.minutes + 5).shouldStartWith("in 4 min")
+
+                context("when the target is less than an hour away") {
+                    beforeEach { minutes = gt.minutes + 5 }
+
+                    it("formats as 'in N min M sec'") {
+                        gt.countdown(gt.minutes + 5).shouldStartWith("in 4 min")
+                    }
                 }
             }
         }
 
         context("when 'today' is fixed via debugOverrideDotw") {
+            afterEach { GoodTimes.debugOverrideDotw = null }
+
             context("and today is Friday (5)") {
+                beforeEach { GoodTimes.debugOverrideDotw = 5; gt = GoodTimes() }
+
                 it("computes tomorrow as Saturday (6)") {
-                    GoodTimes.debugOverrideDotw = 5
-                    val gt = GoodTimes()
                     gt.dotw shouldBe 5
                     gt.tomorrowDotw shouldBe 6
                 }
             }
             context("and today is Saturday (6)") {
+                beforeEach { GoodTimes.debugOverrideDotw = 6; gt = GoodTimes() }
+
                 it("computes tomorrow as Sunday (0), wrapping the week") {
-                    GoodTimes.debugOverrideDotw = 6
-                    val gt = GoodTimes()
+                    gt.dotw shouldBe 6
                     gt.tomorrowDotw shouldBe 0
                 }
             }
             context("and today is Sunday (0)") {
+                beforeEach { GoodTimes.debugOverrideDotw = 0; gt = GoodTimes() }
+
                 it("computes tomorrow as Monday (1)") {
-                    GoodTimes.debugOverrideDotw = 0
-                    val gt = GoodTimes()
+                    gt.dotw shouldBe 0
                     gt.tomorrowDotw shouldBe 1
                 }
             }
