@@ -1,6 +1,7 @@
 # Working with Next Caltrain Kotlin
 
 Quick context for starting a new session on this repo.
+Cross-project conventions (git locks, sandbox toolchain) are in `~/workspace/woodie/docs/COWORK.md`.
 
 ## What this is
 
