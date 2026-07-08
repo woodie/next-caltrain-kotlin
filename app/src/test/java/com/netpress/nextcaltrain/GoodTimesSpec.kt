@@ -149,10 +149,14 @@ class GoodTimesSpec : DescribeSpec({
         }
 
         context("when 'today' is fixed via debugOverrideDotw") {
+            fun setToday(dotw: Int) {
+                GoodTimes.debugOverrideDotw = dotw
+                gt = GoodTimes()
+            }
             afterEach { GoodTimes.debugOverrideDotw = null }
 
             context("and today is Friday (5)") {
-                beforeEach { GoodTimes.debugOverrideDotw = 5; gt = GoodTimes() }
+                beforeEach { setToday(5) }
 
                 it("computes tomorrow as Saturday (6)") {
                     gt.dotw shouldBe 5
@@ -160,7 +164,7 @@ class GoodTimesSpec : DescribeSpec({
                 }
             }
             context("and today is Saturday (6)") {
-                beforeEach { GoodTimes.debugOverrideDotw = 6; gt = GoodTimes() }
+                beforeEach { setToday(6) }
 
                 it("computes tomorrow as Sunday (0), wrapping the week") {
                     gt.dotw shouldBe 6
@@ -168,7 +172,7 @@ class GoodTimesSpec : DescribeSpec({
                 }
             }
             context("and today is Sunday (0)") {
-                beforeEach { GoodTimes.debugOverrideDotw = 0; gt = GoodTimes() }
+                beforeEach { setToday(0) }
 
                 it("computes tomorrow as Monday (1)") {
                     gt.dotw shouldBe 0
