@@ -43,18 +43,20 @@ class TripViewModelSpec : DescribeSpec({
         context("for a route with no service tomorrow") {
             // Weekday-only schedule. Friday -> Saturday = weekend with no SC service.
 
-            beforeEach { GoodTimes.debugOverrideDotw = 5 } // Friday
+            lateinit var viewModel: TripViewModel
+            fun buildViewModel(minutes: Int) {
+                GoodTimes.debugOverrideDotw = 5 // Friday
+                GoodTimes.debugOverrideMinutes = minutes
+                viewModel = makeViewModel(
+                    SpecFixtures.weekdayOnlySchedule(),
+                    SpecFixtures.sanFrancisco,
+                    SpecFixtures.gilroy,
+                )
+            }
 
             context("and all of today's trips have already departed") {
-                lateinit var viewModel: TripViewModel
-                beforeEach {
-                    GoodTimes.debugOverrideMinutes = 1000
-                    viewModel = makeViewModel(
-                        SpecFixtures.weekdayOnlySchedule(),
-                        SpecFixtures.sanFrancisco,
-                        SpecFixtures.gilroy,
-                    )
-                }
+                beforeEach { buildViewModel(1000) }
+
                 it("still has today's trips available") { viewModel.trips.value.shouldNotBeEmpty() }
                 it("has no future (tomorrow) trips appended") {
                     viewModel.trips.value.any { it.isFuture }.shouldBeFalse()
@@ -69,15 +71,8 @@ class TripViewModelSpec : DescribeSpec({
             }
 
             context("and some of today's trips are still upcoming") {
-                lateinit var viewModel: TripViewModel
-                beforeEach {
-                    GoodTimes.debugOverrideMinutes = 100
-                    viewModel = makeViewModel(
-                        SpecFixtures.weekdayOnlySchedule(),
-                        SpecFixtures.sanFrancisco,
-                        SpecFixtures.gilroy,
-                    )
-                }
+                beforeEach { buildViewModel(100) }
+
                 it("selects the next upcoming trip") {
                     viewModel.offset.value shouldBe viewModel.nextIndex.value
                     viewModel.offset.value shouldBe 0
@@ -88,18 +83,20 @@ class TripViewModelSpec : DescribeSpec({
         context("for a route with service every day") {
             // Monday -> Tuesday, both weekday.
 
-            beforeEach { GoodTimes.debugOverrideDotw = 1 } // Monday
+            lateinit var viewModel: TripViewModel
+            fun buildViewModel(minutes: Int) {
+                GoodTimes.debugOverrideDotw = 1 // Monday
+                GoodTimes.debugOverrideMinutes = minutes
+                val schedule = SpecFixtures.schedule {
+                    weekday(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
+                    weekend(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
+                }
+                viewModel = makeViewModel(schedule, SpecFixtures.sanFrancisco, SpecFixtures.sanJoseDiridon)
+            }
 
             context("and all of today's trips have already departed") {
-                lateinit var viewModel: TripViewModel
-                beforeEach {
-                    GoodTimes.debugOverrideMinutes = 1000
-                    val schedule = SpecFixtures.schedule {
-                        weekday(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
-                        weekend(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
-                    }
-                    viewModel = makeViewModel(schedule, SpecFixtures.sanFrancisco, SpecFixtures.sanJoseDiridon)
-                }
+                beforeEach { buildViewModel(1000) }
+
                 it("appends tomorrow's trips, marked as future") {
                     viewModel.trips.value.any { it.isFuture }.shouldBeTrue()
                 }
@@ -113,15 +110,8 @@ class TripViewModelSpec : DescribeSpec({
             }
 
             context("and some of today's trips are still upcoming") {
-                lateinit var viewModel: TripViewModel
-                beforeEach {
-                    GoodTimes.debugOverrideMinutes = 100
-                    val schedule = SpecFixtures.schedule {
-                        weekday(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
-                        weekend(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
-                    }
-                    viewModel = makeViewModel(schedule, SpecFixtures.sanFrancisco, SpecFixtures.sanJoseDiridon)
-                }
+                beforeEach { buildViewModel(100) }
+
                 it("selects today's trip, not a future one") {
                     viewModel.trips.value[viewModel.offset.value].isFuture.shouldBeFalse()
                 }
