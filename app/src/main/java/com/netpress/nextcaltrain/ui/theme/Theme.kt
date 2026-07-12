@@ -37,9 +37,9 @@ val LocalAppColors = staticCompositionLocalOf {
 // MARK: - Font sizes (mirroring iOS AppStyle)
 
 object AppStyle {
-    val fontTrain  = 18.sp
+    val fontTrain = 18.sp
     val fontOrigin = 22.sp
-    val fontBlurb  = 28.sp
+    val fontBlurb = 28.sp
     val fontStatusBar = 18.sp
     val iconButtonSizeDp = 44
 }
@@ -61,10 +61,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 @Composable
-fun NextCaltrainTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
+fun NextCaltrainTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
     val appColors = if (darkTheme) {
         AppColors(

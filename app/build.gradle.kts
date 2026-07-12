@@ -1,7 +1,7 @@
-import java.util.Properties
 import org.gradle.api.tasks.testing.TestDescriptor
 import org.gradle.api.tasks.testing.TestListener
 import org.gradle.api.tasks.testing.TestResult
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -193,8 +193,10 @@ tasks.withType<Test> {
             val line = when (result.resultType) {
                 TestResult.ResultType.SUCCESS ->
                     "${ansi(GREEN, "✔")} ${ansi(GRAY, testDescriptor.name)}"
+
                 TestResult.ResultType.SKIPPED ->
                     ansi(CYAN, "○ ${testDescriptor.name}")
+
                 else ->
                     ansi(RED, "✖ ${testDescriptor.name}")
             }
