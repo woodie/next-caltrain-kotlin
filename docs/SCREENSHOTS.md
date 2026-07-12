@@ -21,7 +21,7 @@ screenshots that look like iOS).
 - Recommended phone size: **1080 x 1920**
 - At least **2 screenshots** required for the phone listing
 
-Our captures (via `snap.sh`, see below) come out at **1080 x 2280** on the
+Our captures (via `sim.sh snap`, see below) come out at **1080 x 2280** on the
 emulator and the same on the test Samsung device — both within range.
 
 ## Capturing a screenshot
@@ -29,8 +29,8 @@ emulator and the same on the test Samsung device — both within range.
 From the project root:
 
 ```bash
-./snap.sh                  # saves ~/Downloads/snap-<timestamp>.png
-./snap.sh my-name.png      # saves ~/Downloads/my-name.png
+./sim.sh snap                  # saves ~/Downloads/snap-<timestamp>.png
+./sim.sh snap my-name.png      # saves ~/Downloads/my-name.png
 ```
 
 This pulls a raw PNG straight off the connected device/emulator framebuffer
@@ -46,7 +46,7 @@ Kill the emulator (close its window, or `adb -s <serial> emu kill`) if
 you're capturing from the real device, or vice versa.
 
 **Empty/failed screenshot**
-Make sure the device screen is on and unlocked before running `./snap.sh`.
+Make sure the device screen is on and unlocked before running `./sim.sh snap`.
 
 ## Sources
 

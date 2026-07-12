@@ -54,17 +54,17 @@ From the project root:
 
 ```bash
 cd ~/workspace/next-caltrain-kotlin
-./build.sh && ./run.sh
+./build.sh && ./sim.sh run
 ```
 
 The app will compile, install, and launch on your phone automatically.
 
-### Useful run.sh flags
+### Useful `sim.sh run` flags
 
 ```bash
-./build.sh && ./run.sh --log      # stream logcat output to terminal (Ctrl-C to stop)
-./build.sh && ./run.sh --fresh    # clear app data before launch (simulates first install)
-./build.sh && ./run.sh --fresh --log   # both
+./build.sh && ./sim.sh run --log      # stream logcat output to terminal (Ctrl-C to stop)
+./build.sh && ./sim.sh run --fresh    # clear app data before launch (simulates first install)
+./build.sh && ./sim.sh run --fresh --log   # both
 ```
 
 ### Check for crashes
@@ -105,10 +105,10 @@ If you want to inspect the UI live on device:
 - Run `adb kill-server && adb start-server` then reconnect.
 
 **App installs but immediately crashes**
-- Run `./run.sh --log` to see the stack trace, or check with the `adb logcat` command above.
+- Run `./sim.sh run --log` to see the stack trace, or check with the `adb logcat` command above.
 
 **"INSTALL_FAILED_UPDATE_INCOMPATIBLE"**
-- Uninstall the existing app from your phone first, then re-run `./build.sh && ./run.sh`.
+- Uninstall the existing app from your phone first, then re-run `./build.sh && ./sim.sh run`.
 
 **Wireless debugging (no cable)**
 Android 11+ supports debugging over Wi-Fi:
@@ -116,4 +116,4 @@ Android 11+ supports debugging over Wi-Fi:
 2. Tap **Pair device with pairing code**.
 3. Run `adb pair <ip>:<port>` with the code shown on your phone.
 4. Then `adb connect <ip>:<port>` (the port shown on the Wireless debugging main screen).
-5. Verify with `adb devices`, then use `./build.sh && ./run.sh` as normal.
+5. Verify with `adb devices`, then use `./build.sh && ./sim.sh run` as normal.

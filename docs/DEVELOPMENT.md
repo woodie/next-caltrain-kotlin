@@ -99,6 +99,13 @@ Add `-F` to auto-fix anything fixable in place:
 ktlint -F
 ```
 
+## Lint, test, check
+
+`make lint` and `make test` wrap the two commands above/`./test.sh` — verbose,
+same output either way. `make check` runs both back to back but tersely:
+lint's usual output, then just `PASS` on a clean test run or the full log if
+anything fails. Run `make check` before committing.
+
 `.editorconfig` configures the rule set: IntelliJ's default code style
 (rather than ktlint_official's stricter formatting), a 120-char line limit,
 a naming exception for `@Composable` functions, and a few other
@@ -116,17 +123,20 @@ emulator or device.
 
 ## Running on the emulator
 
+`sim.sh` is the one entry point for everything emulator-related — no args
+boots it, `run`/`snap`/`dark`/`light` are subcommands:
+
 ```
 ./sim.sh
 ```
 
-`sim.sh` launches the Android simulator then just leave it running.
+Launches the Android emulator and just leaves it running.
 
 ```
-./build.sh && ./run.sh
+./build.sh && ./sim.sh run
 ```
 
-`run.sh` launches the app via `adb shell am start`. Flags:
+`./sim.sh run` launches the app via `adb shell am start`. Flags:
 
 | Flag | Effect |
 | --- | --- |
@@ -136,18 +146,20 @@ emulator or device.
 Examples:
 
 ```
-./run.sh                   # just launch
-./run.sh --fresh           # clear cache, then launch
-./run.sh --log             # launch + stream logs
-./run.sh --fresh --log     # both
+./sim.sh run                   # just launch
+./sim.sh run --fresh           # clear cache, then launch
+./sim.sh run --log             # launch + stream logs
+./sim.sh run --fresh --log     # both
 ```
 
 `--fresh` is useful to exercise the loading state machine (no-cache path).
+If no emulator/device is attached, `./sim.sh run` fails fast with a pointer
+back to `./sim.sh` rather than a raw `adb` error.
 
 ## Viewing logs
 
 ```
-./run.sh --log
+./sim.sh run --log
 ```
 
 Streams `adb logcat` filtered to the app's PID. To add debug logs in Kotlin:
@@ -159,8 +171,8 @@ Log.d("NextCaltrain", "value=$someValue")
 ```
 
 Use the tag `NextCaltrain` (or a subtag like `NextCaltrain.Schedule`) so logs
-are captured by the PID filter. If the PID lookup fails, `run.sh` falls back
-to `-s NextCaltrain:V AndroidRuntime:E`.
+are captured by the PID filter. If the PID lookup fails, `./sim.sh run` falls
+back to `-s NextCaltrain:V AndroidRuntime:E`.
 
 **Important**: `println()` goes to stdout and may not appear in logcat on all
 devices. Always use `Log.d/i/w/e` with a tag for logs you want to see in the
@@ -172,18 +184,22 @@ Open the project root in Android Studio. The IDE has its own Logcat panel
 (`View → Tool Windows → Logcat`) which filters by app automatically — no need
 for `--log` when working there.
 
-For the IDE, use the standard Run (▶) button instead of `./build.sh && ./run.sh`.
+For the IDE, use the standard Run (▶) button instead of `./build.sh && ./sim.sh run`.
 
 ## Quick reference
 
 | Task | Command |
 | --- | --- |
-| Run unit tests | `./test.sh` |
+| Run unit tests | `./test.sh` or `make test` |
 | Run a single spec | `./test.sh GoodTimesSpec` |
-| Lint | `ktlint` (or `ktlint -F` to auto-fix) |
+| Lint | `ktlint` or `make lint` (or `ktlint -F` to auto-fix) |
+| Lint + test, terse | `make check` (run before committing) |
 | Build + install | `./build.sh` |
-| Launch | `./run.sh` |
-| Launch + clear cache | `./run.sh --fresh` |
-| Stream debug logs | `./run.sh --log` |
-| Both | `./run.sh --fresh --log` |
+| Boot the emulator | `./sim.sh` |
+| Launch | `./sim.sh run` |
+| Launch + clear cache | `./sim.sh run --fresh` |
+| Stream debug logs | `./sim.sh run --log` |
+| Both | `./sim.sh run --fresh --log` |
+| Screenshot | `./sim.sh snap [filename]` |
+| Dark / light mode | `./sim.sh dark` / `./sim.sh light` |
 | Check crash logs | `adb logcat -d \| grep -A 20 "FATAL EXCEPTION"` |
