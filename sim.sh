@@ -1,8 +1,8 @@
 #!/bin/bash
 # Usage: ./sim.sh [-d DEVICE]            boot the emulator and leave it running
 #          -d, --device DEVICE   boot an AVD matching DEVICE (substring match).
-#                                 Overrides SIM_DEVICE (see sim-device.env/local.env)
-#                                 for this invocation only.
+#                                 Overrides the default SIM_DEVICE (see the top of
+#                                 this file) for this invocation only.
 #        ./sim.sh run [--fresh] [--log]
 #          --fresh  clear app data before launching
 #          --log    stream filtered logcat after launch (Ctrl-C to stop)
@@ -22,18 +22,14 @@ DEST_DIR=~/Downloads
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Which AVD sim.sh boots by default when no -d/--device is given, highest
-# priority first:
-#   1. SIM_DEVICE already set in the calling environment (e.g.
-#      `SIM_DEVICE=Pixel_Tablet ./sim.sh`) -- captured before the files below
-#      are sourced, and restored after, so it can't be clobbered by them.
-#   2. local.env (gitignored) -- per-developer override.
-#   3. sim-device.env (committed) -- the real default. Edit + commit to
-#      change it for everyone.
-_SIM_DEVICE_FROM_ENV="${SIM_DEVICE:-}"
-[ -f "$SCRIPT_DIR/sim-device.env" ] && source "$SCRIPT_DIR/sim-device.env"
-[ -f "$SCRIPT_DIR/local.env" ] && source "$SCRIPT_DIR/local.env"
-[ -n "$_SIM_DEVICE_FROM_ENV" ] && SIM_DEVICE="$_SIM_DEVICE_FROM_ENV"
+# Default AVD sim.sh boots when no -d/--device is given and SIM_DEVICE isn't
+# already set in the calling environment (e.g. `SIM_DEVICE=Pixel_Tablet
+# ./sim.sh`, which still wins over the line below). Only one AVD exists on
+# this machine currently -- swap the active line for a commented alternative
+# (or add your own) if that changes, and commit it. No separate config file
+# to keep in sync.
+SIM_DEVICE="${SIM_DEVICE:-Pixel_8}"
+# SIM_DEVICE="${SIM_DEVICE:-Pixel_Tablet}"
 
 # Resolves an AVD NAME against installed AVDs: an exact name always wins if
 # one exists, otherwise falls back to a substring match (case-insensitive

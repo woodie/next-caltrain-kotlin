@@ -130,9 +130,10 @@ boots it, `run`/`snap`/`dark`/`light` are subcommands:
 ./sim.sh
 ```
 
-Launches the Android emulator and just leaves it running. Which AVD is read
-from `sim-device.env` (committed default) / `local.env` (personal override)
-— `-d/--device NAME` overrides either for one invocation:
+Launches the Android emulator and just leaves it running. Which AVD boots by
+default is set directly in `sim.sh` (the `SIM_DEVICE=` line near the top,
+edit + commit to change it — no separate config file) — `-d/--device NAME`
+overrides it for one invocation:
 
 ```
 ./sim.sh -d Pixel_Tablet

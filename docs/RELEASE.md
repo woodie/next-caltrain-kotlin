@@ -13,7 +13,7 @@ submission, or a routine update to an already-live listing.
   https://play.google.com/console/signup. Verification can take a few days.
 - **Release keystore + passwords**, in `local.properties` only
   (`RELEASE_STORE_FILE`, `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`,
-  `RELEASE_KEY_PASSWORD`). See `docs/CLAUDE.md` → "Release signing". **If this
+  `RELEASE_KEY_PASSWORD`). See `docs/COWORK.md` → "Release signing". **If this
   keystore is lost, you can never update this app listing again** — back it up
   somewhere durable outside the repo.
 - **12+ people willing to install a test build for 14 consecutive days.**
@@ -25,7 +25,7 @@ submission, or a routine update to an already-live listing.
   answers).
 - **Privacy policy** — already live: https://next-caltrain-pwa.appspot.com/privacy.html
 - **Screenshots** — `pics/1920_*.png` (3 ready, only 2 required). See
-  `docs/CLAUDE_ADDITIONS.md` "Play Store" section for how these were produced.
+  `docs/COWORK_ADDITIONS.md` "Play Store" section for how these were produced.
 - **App icon (512×512 PNG) and feature graphic (1024×500 PNG)** — not yet
   created as of this writing. Needed before the store listing can go live.
 
@@ -155,7 +155,7 @@ confirmed gone.
 
 - **Lost keystore** → there is no recovery path; you cannot push further
   updates to this listing under any account. This is the single highest-risk
-  failure mode in this whole process — see `docs/CLAUDE.md` "Release
+  failure mode in this whole process — see `docs/COWORK.md` "Release
   signing" for where the backup should live.
 - **Account suspension or policy strikes** → Play Console Help Center /
   appeal form inside Play Console itself; nothing in this repo can help with
@@ -165,7 +165,7 @@ confirmed gone.
 
 ## References
 
-- `docs/CLAUDE.md` — release signing / keystore setup
+- `docs/COWORK.md` — release signing / keystore setup
 - `docs/PLAY_STORE_LISTING.md` — listing copy and data safety answers
-- `docs/CLAUDE_ADDITIONS.md` — screenshot workaround status, emulator notes
+- `docs/COWORK_ADDITIONS.md` — screenshot workaround status, emulator notes
 - `pics/1920_*.png` — current screenshots ready for upload

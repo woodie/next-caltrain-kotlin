@@ -11,11 +11,11 @@ plugins {
 // Schedule endpoint resolution, highest priority first:
 //   1. local.properties (gitignored) — per-developer override, e.g. to point at a
 //      local hang/instant-fail test server. Never committed.
-//   2. schedule-endpoint.properties (committed) — the real production URL. If the
+//   2. config.properties (committed) — the real production URL. If the
 //      schedule data ever moves to a new home, edit and commit this file directly;
 //      no source edit needed.
 //   3. Hardcoded literal below — last-resort safety net if both files are missing.
-// See docs/CLAUDE.md "Schedule data".
+// See docs/COWORK.md "Schedule data".
 val localProperties = Properties().apply {
     val localPropsFile = rootProject.file("local.properties")
     if (localPropsFile.exists()) {
@@ -23,7 +23,7 @@ val localProperties = Properties().apply {
     }
 }
 val defaultProperties = Properties().apply {
-    val defaultsFile = rootProject.file("schedule-endpoint.properties")
+    val defaultsFile = rootProject.file("config.properties")
     if (defaultsFile.exists()) {
         defaultsFile.inputStream().use { load(it) }
     }

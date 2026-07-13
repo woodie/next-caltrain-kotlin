@@ -21,8 +21,11 @@ resolved with this precedence:
 1. `local.properties` (gitignored) — per-developer override, e.g. to point at
    `next-caltrain-swift/tools/hang_server.py` for instant-fail / 10s-timeout-race testing.
    Never committed, no source edit/revert needed.
-2. `schedule-endpoint.properties` (committed, repo root) — the real production URL.
-   If the schedule data ever moves to a new home, edit and commit this file directly.
+2. `config.properties` (committed, repo root) — the real production URL. If the
+   schedule data ever moves to a new home, edit and commit this file directly.
+   Named generically (not `schedule-endpoint.properties`) since it's the
+   general committed-app-config file, not schedule-only — matches the Swift
+   sibling's `config.properties`.
 3. A hardcoded literal in `build.gradle.kts` — last-resort safety net if both files are
    missing.
 
@@ -64,7 +67,7 @@ upload.
 ## Current status
 
 All five screens (Home, TripList, TripDetail, StationSelection, About) are implemented,
-navigable, and tested on device. See `docs/CLAUDE_ADDITIONS.md` for per-screen status and
+navigable, and tested on device. See `docs/COWORK_ADDITIONS.md` for per-screen status and
 UI architecture decisions. Outstanding work is UI polish, not missing features.
 
 ### Done
