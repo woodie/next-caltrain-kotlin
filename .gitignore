@@ -25,6 +25,9 @@ hs_err_pid*
 replay_pid*
 local.properties
 
+# Local sim.sh device override (see docs/DEVELOPMENT.md)
+local.env
+
 # Release signing — keystore must never be committed
 *.jks
 *.keystore

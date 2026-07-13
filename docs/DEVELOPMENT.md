@@ -130,7 +130,13 @@ boots it, `run`/`snap`/`dark`/`light` are subcommands:
 ./sim.sh
 ```
 
-Launches the Android emulator and just leaves it running.
+Launches the Android emulator and just leaves it running. Which AVD is read
+from `sim-device.env` (committed default) / `local.env` (personal override)
+— `-d/--device NAME` overrides either for one invocation:
+
+```
+./sim.sh -d Pixel_Tablet
+```
 
 ```
 ./build.sh && ./sim.sh run
@@ -196,6 +202,8 @@ For the IDE, use the standard Run (▶) button instead of `./build.sh && ./sim.s
 | Lint + test, terse | `make check` (run before committing) |
 | Build + install | `./build.sh` |
 | Boot the emulator | `./sim.sh` |
+| List available AVDs | `./sim.sh list` |
+| Boot a specific AVD | `./sim.sh -d Pixel_Tablet` |
 | Launch | `./sim.sh run` |
 | Launch + clear cache | `./sim.sh run --fresh` |
 | Stream debug logs | `./sim.sh run --log` |
