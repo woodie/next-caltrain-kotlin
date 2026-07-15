@@ -169,8 +169,7 @@ class TripViewModel(val schedule: Schedule, private val context: Context) : View
     }
 
     fun markDragStart() {
-        // Called as soon as drag is detected — prevents the 1-second timer from
-        // resetting offset mid-drag, which would restart the gesture handler.
+        // Called as soon as drag is detected — prevents the 1-second timer from resetting offset mid-drag.
         userSelected = true
     }
 

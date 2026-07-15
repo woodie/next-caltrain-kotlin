@@ -46,8 +46,7 @@ fun HomeScreen(
     var accumulatedDrag by remember { mutableFloatStateOf(0f) }
     val rowHeight = 44f
 
-    // Live references so the pointerInput lambda (key=Unit, never restarts) always
-    // reads the current offset/trips instead of the stale Int captured at creation time.
+    // Live references so the pointerInput lambda (key=Unit, never restarts) reads current offset/trips.
     val latestOffset = rememberUpdatedState(offset)
     val latestTrips = rememberUpdatedState(trips)
 
@@ -111,13 +110,7 @@ fun HomeScreen(
                 )
             },
     ) {
-        // Gradient background
-        // iOS draws this as LinearGradient(startPoint: .top, endPoint: .center) inside a
-        // 200pt frame — .top/.center are fractional anchors, so the fade completes by the
-        // frame's halfway point (100pt); the rest is flat appBackground. Compose's
-        // verticalGradient with no startY/endY spans the box's full height, so matching
-        // height(200.dp) here made the fade twice as tall as iOS. height(100.dp) reproduces
-        // the same pixels: the visible fade is the only part of the box that ever mattered.
+        // Gradient background — height(100.dp) matches iOS's actual fade extent; see docs/COMMENTS.md.
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -135,10 +128,7 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .padding(top = 8.dp)
-                // Status bar covers the top edge; the navigation bar can also land on
-                // the left/right edge instead of the bottom (e.g. 3-button nav in
-                // landscape), which otherwise covers this row's trailing swap icon.
-                // Pad for both without adding an unnecessary bottom inset in portrait.
+                // Top + horizontal insets only: landscape 3-button nav can land on a side edge too.
                 .windowInsetsPadding(
                     WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
                 )
@@ -162,8 +152,7 @@ fun HomeScreen(
                         .clip(CircleShape)
                         .background(colors.iconCircleBackground),
                 ) {
-                    // Refresh is drawn clockwise; mirror it horizontally so it
-                    // reads as counterclockwise, matching iOS's arrow.counterclockwise.
+                    // Icon flips horizontally: clockwise art reads as iOS's counterclockwise arrow.
                     Icon(
                         Icons.Filled.Refresh,
                         contentDescription = "Reset",

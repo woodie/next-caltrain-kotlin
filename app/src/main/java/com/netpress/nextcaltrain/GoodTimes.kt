@@ -5,11 +5,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-/**
- * Central time utility. Subtracts 2 hours from the real clock so that
- * trains running past midnight (e.g. 24:05 = 1445 minutes) still appear
- * on "today's" schedule rather than rolling to tomorrow at midnight.
- */
+// Central time utility: subtracts 2 hours so trains past midnight stay on "today's" schedule.
 data class GoodTimes(
     val date: String,
     val minutes: Int,
@@ -19,8 +15,7 @@ data class GoodTimes(
     val tomorrowDotw: Int,
 ) {
     companion object {
-        // DEBUG OVERRIDES — set to non-null to pin time/day for testing.
-        // Format: minutes since midnight, e.g. 330 = 5:30am.
+        // DEBUG OVERRIDE — set to pin time-of-day for testing (minutes since midnight, e.g. 330 = 5:30am).
         var debugOverrideMinutes: Int? = null
 
         // 0 = Sunday ... 6 = Saturday. Set to null for normal behavior.
@@ -59,10 +54,7 @@ data class GoodTimes(
             )
         }
 
-        /** Returns the yyyy-MM-dd schedule-day string for an arbitrary instant, using
-         * the same "day starts at 2am" rule as invoke(): subtract 2 hours before formatting.
-         * Lets us compare "today" against a stored last-fetch timestamp for the
-         * once-per-day schedule fetch policy. */
+        // Schedule-day string for an instant, using the same 2am-boundary rule as invoke().
         fun scheduleDateFor(epochMillis: Long): String = dateFmt.format(Date(epochMillis - 2 * 60 * 60 * 1000L))
 
         fun partTime(minutes: Int): Pair<String, String> {

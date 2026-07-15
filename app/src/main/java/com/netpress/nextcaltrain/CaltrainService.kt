@@ -1,17 +1,13 @@
 package com.netpress.nextcaltrain
 
-/**
- * Models a single leg of a trip (one train, one boarding station, one depart time).
- */
+// One leg of a trip: one train, one boarding station, one depart time.
 data class Leg(
     val trainId: Int,
     val station: String,
     val depart: Int, // minutes since midnight
 )
 
-/**
- * A trip with one or two legs. Two legs = transfer at San Jose Diridon.
- */
+// A trip with one or two legs. Two legs = transfer at San Jose Diridon.
 data class Trip(
     val id: Int, // lead train ID
     val legs: List<Leg>,
@@ -22,10 +18,7 @@ data class Trip(
     val isTransfer: Boolean get() = legs.size > 1
 }
 
-/**
- * Computes train routes, including transfers for South County service.
- * Mirrors iOS CaltrainService.swift.
- */
+// Computes train routes, including transfers for South County service. Mirrors iOS CaltrainService.swift.
 class CaltrainService(private val schedule: Schedule) {
 
     companion object {

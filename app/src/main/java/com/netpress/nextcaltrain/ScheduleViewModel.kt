@@ -9,37 +9,21 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
-/**
- * Schedule loading state machine:
- * - Already fetched today (2am boundary) and cache exists: use the cache, no
- *   network call at all.
- * - No cache: block on a network fetch. Success -> Ready. Failure -> Error
- *   (retried the next time the app/process is opened).
- * - Cache exists but not fetched today: race a fetch against a 10s timeout.
- *   Winner -> Ready. Loser/failure -> fall back to the stale cache (retried
- *   the next time the app/process is opened, since fetchedToday() stays false
- *   until a fetch actually succeeds).
- */
+// Schedule loading state machine; see docs/COMMENTS.md for the three cases this walks through.
 sealed class LoadState {
     object Loading : LoadState()
     object Error : LoadState()
     data class Ready(val schedule: Schedule) : LoadState()
 }
 
-/**
- * Hosted in a ViewModel (rather than Compose `remember`) so this survives
- * Activity recreation on rotation. Without this, rotating the screen would
- * tear down the whole load sequence and re-flash "Loading schedule data"
- * every time, even though we already had a perfectly good schedule loaded.
- */
+// Hosted in a ViewModel (not Compose `remember`) so the load sequence survives Activity recreation on rotation.
 class ScheduleViewModel : ViewModel() {
     private val _loadState = MutableStateFlow<LoadState>(LoadState.Loading)
     val loadState: StateFlow<LoadState> = _loadState.asStateFlow()
 
     private var started = false
 
-    /** Safe to call on every recomposition (e.g. after rotation re-creates the
-     * Activity) — the load sequence only actually runs once per ViewModel instance. */
+    // Safe to call on every recomposition — the load sequence only actually runs once per instance.
     fun ensureLoaded(context: Context) {
         if (started) return
         started = true

@@ -9,13 +9,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.util.Calendar
 
-/**
- * Covers Schedule.fetchedToday() -- the once-per-day fetch cap that lets
- * MainActivity/ScheduleViewModel skip a redundant network call once we
- * already have today's schedule. fetchedToday() itself only reads from
- * SharedPreferences and delegates to GoodTimes.scheduleDateFor(); the 2am
- * boundary math for scheduleDateFor() is covered separately in GoodTimesSpec.
- */
+// Covers Schedule.fetchedToday(); the 2am-boundary math it delegates to is covered in GoodTimesSpec.
 class ScheduleSpec : DescribeSpec({
 
     fun contextWithLastFetch(epochMillis: Long?): Context {
@@ -31,10 +25,7 @@ class ScheduleSpec : DescribeSpec({
         return context
     }
 
-    // Fixed at noon on an arbitrary date, well clear of the 2am schedule-day
-    // boundary in either direction. Tests pin "now" explicitly via fetchedToday's
-    // nowMillis param instead of System.currentTimeMillis(), so results don't
-    // depend on what time the suite happens to run.
+    // Fixed noon, well clear of the 2am schedule-day boundary, so results don't depend on real run time.
     fun fixedNoon(): Long {
         val cal = Calendar.getInstance()
         cal.set(2024, Calendar.JANUARY, 15, 12, 0, 0)

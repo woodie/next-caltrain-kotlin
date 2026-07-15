@@ -121,8 +121,7 @@ fun TripDetailScreen(vm: TripViewModel, onNavigateBack: () -> Unit) {
             Spacer(modifier = Modifier.size(AppStyle.iconButtonSizeDp.dp))
         }
 
-        // Stop list — centered as a block, matching iOS (no rightward bias; the ragged
-        // right edge from varying station-name lengths is expected and left as-is).
+        // Stop list centered as a block, matching iOS; ragged right edge is expected, left as-is.
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -132,8 +131,7 @@ fun TripDetailScreen(vm: TripViewModel, onNavigateBack: () -> Unit) {
         ) {
             Column {
                 stops.forEachIndexed { index, stop ->
-                    // Line colors are time-based (not role-based) so origin/destination dots
-                    // show white while their segment colors still reflect past/future travel.
+                    // Time-based, not role-based: origin/destination dots stay white regardless.
                     val stopLineColor = if (goodTimes.inThePast(stop.time)) colors.calPast else colors.calArrive
                     val nextTrackColor = stops.getOrNull(index + 1)?.let { next ->
                         if (goodTimes.inThePast(next.time)) colors.calPast else colors.calArrive

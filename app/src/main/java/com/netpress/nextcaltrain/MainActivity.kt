@@ -30,10 +30,7 @@ fun NextCaltrainApp() {
     val context = LocalContext.current
     val scheduleVm: ScheduleViewModel = viewModel()
 
-    // ensureLoaded() no-ops after its first call, so this is safe to re-run after
-    // rotation recreates the Activity/composition — it won't re-trigger the fetch
-    // or flash the loading screen again. Pass applicationContext so the coroutine
-    // (which can run for up to 10s) never holds a reference to a destroyed Activity.
+    // applicationContext, not context: the fetch coroutine can run up to 10s and must outlive the Activity.
     LaunchedEffect(Unit) { scheduleVm.ensureLoaded(context.applicationContext) }
     val loadState by scheduleVm.loadState.collectAsStateWithLifecycle()
 

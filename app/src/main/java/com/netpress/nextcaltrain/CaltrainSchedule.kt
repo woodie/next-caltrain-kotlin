@@ -16,11 +16,7 @@ enum class ScheduleType(val label: String) {
 }
 
 object CaltrainSchedule {
-    /**
-     * Returns the schedule type for a given date string and day-of-week,
-     * consulting specialDates first, then falling back to dotw-based logic.
-     * Factored out so tomorrow's schedule type can be computed independently.
-     */
+    // Factored out (rather than inlined into forToday) so tomorrow's schedule type can be computed independently.
     fun optionIndexFor(date: String, dotw: Int, specialDates: Map<String, Int>): ScheduleType {
         specialDates[date]?.let { return ScheduleType.fromInt(it) }
         return if (dotw == 0 || dotw == 6) ScheduleType.WEEKEND else ScheduleType.WEEKDAY

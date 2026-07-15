@@ -55,12 +55,7 @@ fun TripListScreen(
     val rowHeightDp = 42.dp // tightened leading to match iOS; must track TripRow's padding below
     val rowHeightPx = with(density) { rowHeightDp.toPx() }
 
-    // Actual measured height of a rendered TripRow, used for tap/drag slot math instead of
-    // rowHeightPx. rowHeightPx is a hand-tuned estimate (only used below for the rowCount
-    // layout calc, where no row exists yet to measure) — if it ever drifts from what
-    // TripRow actually renders (font scaling, a padding tweak), tap routing computed from
-    // it would desync from what's on screen, worse for higher slot indices. Measuring the
-    // real thing removes that whole class of bug.
+    // Real rendered TripRow height, used for tap/drag slot math instead of the hand-tuned rowHeightPx estimate.
     var measuredRowHeightPx by remember { mutableFloatStateOf(rowHeightPx) }
 
     val effectiveOffset = (offset + dragShift).coerceIn(0, maxOf(trips.size - 1, 0))
@@ -109,11 +104,7 @@ fun TripListScreen(
             6
         }
 
-        // Gradient background
-        // Same fix as HomeScreen: iOS's LinearGradient(.top -> .center) inside a 200pt frame
-        // only fades across the first half (100pt) and is flat appBackground after that.
-        // Compose's verticalGradient with no startY/endY spans the full box height, so
-        // height(100.dp) is what reproduces iOS's actual fade extent.
+        // Gradient background — same iOS fade-extent fix as HomeScreen; see docs/COMMENTS.md.
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -158,8 +149,7 @@ fun TripListScreen(
                                 .clip(CircleShape)
                                 .background(colors.iconCircleBackground),
                         ) {
-                            // Refresh is drawn clockwise; mirror it horizontally so it
-                            // reads as counterclockwise, matching iOS's arrow.counterclockwise.
+                            // Icon flips horizontally: clockwise art reads as iOS's counterclockwise arrow.
                             Icon(
                                 Icons.Filled.Refresh,
                                 contentDescription = "Reset",
@@ -248,8 +238,7 @@ fun TripListScreen(
             }
 
             // ── Trip rows ────────────────────────────────────────────────────
-            // rememberUpdatedState gives the lambda a live reference to offset/trips
-            // without restarting the coroutine on every recomposition.
+            // Live reference so the gesture lambda below sees current offset/trips without restarting.
             val latestOffset = rememberUpdatedState(offset)
             val latestTrips = rememberUpdatedState(trips)
 
@@ -258,8 +247,7 @@ fun TripListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    // Key is trips.size only (not offset) — prevents restarting mid-drag
-                    // when the timer or vm.setOffset() updates offset.
+                    // Key is trips.size only (not offset) — prevents restarting mid-drag when offset updates.
                     .pointerInput(trips.size) {
                         awaitEachGesture {
                             val down = awaitFirstDown(requireUnconsumed = false)
@@ -274,8 +262,7 @@ fun TripListScreen(
 
                                 if (!isDragging && abs(totalDragY) > viewConfiguration.touchSlop) {
                                     isDragging = true
-                                    // Mark immediately so the 1-second timer can't reset
-                                    // offset mid-drag (which would shift the drag baseline).
+                                    // Mark immediately so the 1-second timer can't reset offset mid-drag.
                                     vm.markDragStart()
                                 }
                                 if (isDragging) {
@@ -283,8 +270,7 @@ fun TripListScreen(
                                     accumulatedDrag = totalDragY
                                     val newShift = -(accumulatedDrag / measuredRowHeightPx).toInt()
                                     val proposed = latestOffset.value + newShift
-                                    // Only write State when value changes — avoids a recomposition
-                                    // on every pointer event (60-120/sec) when still in same row.
+                                    // Only write State on change — avoids a recomposition per pointer event (60-120/sec).
                                     if (proposed >= 0 && proposed < latestTrips.value.size && newShift != dragShift) {
                                         dragShift = newShift
                                     }
@@ -292,8 +278,7 @@ fun TripListScreen(
                             } while (event.changes.any { it.pressed })
 
                             if (isDragging) {
-                                // Use latestOffset.value (live) not captured `effectiveOffset`
-                                // (stale Int from composition time) to avoid snapping back.
+                                // Use latestOffset.value (live), not a stale captured Int, to avoid snapping back.
                                 val finalOffset = (latestOffset.value + dragShift)
                                     .coerceIn(0, maxOf(latestTrips.value.size - 1, 0))
                                 vm.setOffset(finalOffset)
@@ -329,8 +314,7 @@ fun TripListScreen(
                             isDeparting = slot == 0 && isSelectedDeparting,
                             swapped = vm.swapped,
                             colors = colors,
-                            // Measure the first row's real rendered height and feed it back
-                            // into the gesture handler above — see measuredRowHeightPx comment.
+                            // Measures the first row's real height and feeds it back into measuredRowHeightPx above.
                             modifier = if (slot == 0) {
                                 Modifier.onGloballyPositioned { measuredRowHeightPx = it.size.height.toFloat() }
                             } else {
@@ -369,9 +353,7 @@ fun TripRow(
     val (departTime, departMer) = GoodTimes.partTime(trip.depart)
     val (arriveTime, arriveMer) = GoodTimes.partTime(trip.arrive)
 
-    // Row hugs its content (no fillMaxWidth) so the border tightly wraps the columns
-    // instead of stretching edge to edge; fixed column widths keep times aligned
-    // down the list regardless of digit count (e.g. "9:55" vs "12:55").
+    // No fillMaxWidth: border hugs content; fixed column widths keep times aligned regardless of digit count.
     Row(
         modifier = modifier
             .padding(vertical = 1.dp)

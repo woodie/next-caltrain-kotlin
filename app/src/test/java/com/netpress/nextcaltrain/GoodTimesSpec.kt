@@ -182,11 +182,7 @@ class GoodTimesSpec : DescribeSpec({
         }
 
         describe(".scheduleDateFor()") {
-            // Used by the once-per-day schedule fetch cap to decide whether a
-            // stored "last fetched at" timestamp still counts as "today" under
-            // the same "day starts at 2am" rule GoodTimes() itself uses. These
-            // tests build both timestamps from the same Calendar so the
-            // comparison holds regardless of the machine's default timezone.
+            // Both timestamps built from the same Calendar so the comparison holds regardless of local timezone.
             val cal = Calendar.getInstance()
 
             it("returns the same schedule-day for two instants on the same calendar day, both after 2am") {

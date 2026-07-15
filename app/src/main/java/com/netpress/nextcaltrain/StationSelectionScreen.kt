@@ -104,8 +104,7 @@ fun StationSelectionScreen(vm: TripViewModel, onNavigateBack: () -> Unit) {
             }
             Spacer(modifier = Modifier.weight(1f))
             if (!isAlreadyDefault) {
-                // Grouped in one pill (matching iOS's paired restore+save buttons)
-                // instead of two separate circles.
+                // One pill grouping both buttons, matching iOS's paired restore+save buttons.
                 Row(
                     modifier = Modifier
                         .height(AppStyle.iconButtonSizeDp.dp)
@@ -116,8 +115,7 @@ fun StationSelectionScreen(vm: TripViewModel, onNavigateBack: () -> Unit) {
                         onClick = { vm.restoreDefaultStops() },
                         modifier = Modifier.size(AppStyle.iconButtonSizeDp.dp),
                     ) {
-                        // Refresh is drawn clockwise; mirror it horizontally so it
-                        // reads as counterclockwise, matching iOS's arrow.counterclockwise.
+                        // Icon flips horizontally: clockwise art reads as iOS's counterclockwise arrow.
                         Icon(
                             Icons.Filled.Refresh,
                             contentDescription = "Restore defaults",
@@ -197,10 +195,7 @@ private fun StationList(
     val listState = rememberLazyListState()
     val selectedIndex = stations.indexOf(selected).coerceAtLeast(0)
 
-    // Center the selected row in the viewport, matching iOS's
-    // `proxy.scrollTo(station, anchor: .center)`. LazyListState has no anchor concept,
-    // so we jump to the item if it's off-screen (to make it measurable), then read its
-    // real position/size from layoutInfo and animate the precise correction to center it.
+    // Centers the selected row, matching iOS's scrollTo(anchor: .center); see docs/COMMENTS.md.
     LaunchedEffect(selected) {
         if (listState.layoutInfo.visibleItemsInfo.none { it.index == selectedIndex }) {
             listState.scrollToItem(selectedIndex)
@@ -230,9 +225,7 @@ private fun StationList(
             )
         }
 
-        // BoxWithConstraints lets us compute start padding relative to the panel width
-        // so portrait and landscape panels both center the content block correctly,
-        // with a +12dp rightward bias matching iOS's fixed `.offset(x: 12)`.
+        // Start padding computed from panel width, +12dp rightward bias matching iOS's fixed offset(x: 12).
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val startPad = ((maxWidth - 200.dp) / 2 + 12.dp).coerceAtLeast(12.dp)
             LazyColumn(

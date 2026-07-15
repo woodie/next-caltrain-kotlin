@@ -6,11 +6,7 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 
-/**
- * Holds the parsed schedule.json data. Mirrors the iOS Schedule struct.
- * Uses Android's built-in JSONObject rather than a third-party library
- * to keep dependencies minimal.
- */
+// Holds the parsed schedule.json data; uses Android's built-in JSONObject, no third-party JSON lib.
 data class Schedule(
     val specialDates: Map<String, Int>,
     val northStops: List<String>,
@@ -29,8 +25,7 @@ data class Schedule(
         private const val CACHE_FILE = "schedule.json"
         private const val FETCH_TIMEOUT_MS = 10_000
 
-        // internal (not private) so unit tests can build a fake SharedPreferences
-        // keyed the same way as production, instead of hardcoding magic strings.
+        // internal (not private) so tests can key a fake SharedPreferences the same way as production.
         internal const val PREFS_NAME = "nextcaltrain"
         internal const val KEY_LAST_FETCH_MS = "lastFetchMs"
 
@@ -46,12 +41,7 @@ data class Schedule(
             }
         }
 
-        /** True if the last successful network fetch landed on today's schedule-day
-         * (2am boundary, see GoodTimes.scheduleDateFor). Used to skip redundant
-         * network calls once we already have today's data.
-         *
-         * [nowMillis] defaults to the real clock; tests pass a fixed value so the
-         * 2am-boundary comparison is deterministic regardless of when the suite runs. */
+        // True if the last successful fetch landed on today's schedule-day (2am boundary); skips redundant fetches.
         fun fetchedToday(context: Context, nowMillis: Long = System.currentTimeMillis()): Boolean {
             val last = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .getLong(KEY_LAST_FETCH_MS, -1L)

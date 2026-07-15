@@ -27,10 +27,7 @@ class TripViewModelSpec : DescribeSpec({
         GoodTimes.debugOverrideDotw = null
     }
 
-    // TripViewModel reads/writes stop preferences via Context.getSharedPreferences()
-    // in init{}. A relaxed mock answers every unstubbed call with the type's default
-    // (0 for the stored AM/PM stop indices), which is fine here since every test
-    // immediately overwrites origin/destination via setOrigin/setDestination anyway.
+    // Relaxed mock: TripViewModel reads stop prefs in init{}, but every test overwrites origin/destination anyway.
     fun makeViewModel(schedule: Schedule, origin: String, destination: String): TripViewModel =
         TripViewModel(schedule, mockk<Context>(relaxed = true)).apply {
             setOrigin(origin)
@@ -164,11 +161,7 @@ class TripViewModelSpec : DescribeSpec({
         }
 
         context("manual selection via setOffset") {
-            // Regression coverage for the reset-button-stuck-on bug: dragging
-            // away from the next train sets hasManualSelection, but dragging
-            // back to that same next-train offset should clear it again —
-            // otherwise the reset button stays visible even though the
-            // current selection is exactly the auto-picked "next train".
+            // Regression coverage for the reset-button-stuck-on bug; see docs/COMMENTS.md.
             lateinit var viewModel: TripViewModel
             beforeEach {
                 GoodTimes.debugOverrideDotw = 1 // Monday

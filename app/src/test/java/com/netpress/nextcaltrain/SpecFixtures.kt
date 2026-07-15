@@ -1,13 +1,6 @@
 package com.netpress.nextcaltrain
 
-/**
- * Factory for building Schedule fixtures for specs.
- * Mirrors iOS SpecFixtures.swift exactly.
- *
- * 16 stations: SF(0), SJD(7), Morgan Hill(14), Gilroy(15)
- * Electric trains run SF <-> SJD only.
- * Diesel/SC trains run SJD <-> Gilroy only.
- */
+// Factory for building Schedule fixtures for specs; see docs/COMMENTS.md for the station layout.
 object SpecFixtures {
     const val sanFrancisco = "San Francisco"
     const val sanJoseDiridon = "San Jose Diridon"
