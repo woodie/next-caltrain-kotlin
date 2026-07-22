@@ -136,26 +136,35 @@ fully-qualified names, wildcards, and the `kotest_filter_tests` variant
 
 ### Test output formatting
 
-`app/build.gradle.kts` registers a custom Gradle `TestListener` (replacing
-`gradle-test-logger-plugin`) that prints a real nested describe/context/it tree
-straight from `TestDescriptor.parent`, with terminal colors matching Mocha's
-spec reporter — green ✔ + dimmed name on pass, solid red ✖ + red exception
-detail on failure, solid cyan ○ on skip. Unlike the old plugin's mocha theme,
-which hardcoded a blank line between every nested describe/context group,
-this one only blank-lines before each top-level suite (see below) — nested
-groups within a suite still print with no padding. Set `NO_COLOR=1` to
-disable the ANSI codes (e.g. piping to a file). See the comment block above
-the listener in `build.gradle.kts` for the "dedupe shared prefix" trick that
-turns Gradle's flat `afterTest` callbacks into a dense tree.
+`app/build.gradle.kts` used to register its own custom Gradle `TestListener`
+directly (replacing `gradle-test-logger-plugin`), byte-for-byte copied into
+humane-kotlin/huck too. That block is now `kotidy` (see
+`~/workspace/kotidy`'s own `docs/COWORK.md`) -- one real plugin instead of
+three hand-synced copies, applied here via `pluginManagement { includeBuild
+("../kotidy") }` (settings.gradle.kts) + `id("com.netpress.kotidy")` +
+`kotidy { style = "fs" }`. Still prints a real nested describe/context/it
+tree straight from `TestDescriptor.parent`, still only blank-lines before
+each top-level suite, still respects `NO_COLOR=1`. `style = "fs"` is the
+closest match to the old look (green ✔ + dimmed name on pass) but isn't
+byte-identical -- the old ad hoc block's fail/skip glyphs (solid red ✖, solid
+cyan ○, no `(FAILED - N)`/`(SKIPPED)` suffix) never actually matched a real
+named convention; `fs` now renders Mocha's real spec format instead (red
+`✗ name (FAILED - N)`, cyan `- name (SKIPPED)`) -- see kotidy's README for
+the full style table if a different look is ever wanted.
 
-There's no custom "N passing (Xs)" summary line at the end — there used to
-be, but it relied on a `val runStart = System.currentTimeMillis()` set at
-Gradle configuration time, which goes stale (sometimes by hours) whenever
-`org.gradle.configuration-cache=true` reuses a cached configuration instead
-of re-running it, producing nonsense elapsed times like `72 passing
-(113516.7s)`. Rather than chase that down further, the summary line was
-dropped — Gradle's own `BUILD SUCCESSFUL`/`BUILD FAILED` is the whole footer
-now.
+There's now a real "Test Succeeded"/"Test Failed" + counts summary line at
+the end again, via `kotidy`'s shared `standardFooter`. There used to be one
+here too, before it was dropped: it relied on a `val runStart =
+System.currentTimeMillis()` set at Gradle *configuration* time, which went
+stale (sometimes by hours) whenever `org.gradle.configuration-cache=true`
+reused a cached configuration instead of re-running it, producing nonsense
+elapsed times like `72 passing (113516.7s)`. `kotidy`'s footer doesn't have
+the same bug: every count and duration it prints is reset in `doFirst`
+(actual task-execution time, re-run on every invocation regardless of
+config-cache state -- the same fix already applied to `lastPath`'s own
+dedupe state) and each test's elapsed time comes from `TestResult`'s real
+per-test `startTime`/`endTime`, never a value captured once at configuration
+time. `BUILD SUCCESSFUL`/`BUILD FAILED` still follows right after, unchanged.
 
 That footer still includes a `Configuration cache entry stored/reused.`
 line. `test.sh` deliberately does NOT pipe `./gradlew clean test` through
