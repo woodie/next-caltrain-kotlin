@@ -3,7 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    id("com.netpress.kotidy")
+    id("com.netpress.kotidy") version "0.1.0"
 }
 
 // Schedule endpoint resolution, highest priority first:

@@ -140,9 +140,13 @@ fully-qualified names, wildcards, and the `kotest_filter_tests` variant
 directly (replacing `gradle-test-logger-plugin`), byte-for-byte copied into
 humane-kotlin/huck too. That block is now `kotidy` (see
 `~/workspace/kotidy`'s own `docs/COWORK.md`) -- one real plugin instead of
-three hand-synced copies, applied here via `pluginManagement { includeBuild
-("../kotidy") }` (settings.gradle.kts) + `id("com.netpress.kotidy")` +
-`kotidy { style = "fs" }`. Still prints a real nested describe/context/it
+three hand-synced copies. Originally consumed as a composite build
+(`pluginManagement { includeBuild("../kotidy") }`); now that
+`com.netpress.kotidy` is approved and live on the Gradle Plugin Portal,
+`settings.gradle.kts` just has `gradlePluginPortal()` in
+`pluginManagement.repositories` like any other plugin, and `app/build.gradle.kts`
+pins `id("com.netpress.kotidy") version "0.1.0"` + `kotidy { style = "fs" }`
+-- no sibling checkout of `kotidy` needed on disk or in CI anymore. Still prints a real nested describe/context/it
 tree straight from `TestDescriptor.parent`, still only blank-lines before
 each top-level suite, still respects `NO_COLOR=1`. `style = "fs"` is the
 closest match to the old look (green ✔ + dimmed name on pass) but isn't
