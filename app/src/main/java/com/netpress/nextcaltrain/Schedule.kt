@@ -11,10 +11,7 @@ import java.time.Duration
 
 class ScheduleError(message: String) : Exception(message)
 
-class ScheduleHttpResult(
-    val statusCode: Int,
-    val body: String,
-)
+class ScheduleHttpResult(val statusCode: Int, val body: String)
 
 // Test seam matching huck's ScanHttpClient interface -- lets ScheduleSpec fake server responses
 // (status codes, bodies) without a real network call. JdkHttpScheduleHttpClient below is the real
@@ -102,21 +99,20 @@ data class Schedule(
         suspend fun fetchFromNetwork(
             context: Context,
             httpClient: ScheduleHttpClient = JdkHttpScheduleHttpClient(),
-        ): Schedule =
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                val result = httpClient.get(URI(REMOTE_URL))
-                if (result.statusCode != 200) {
-                    throw ScheduleError("The server responded with status ${result.statusCode}.")
-                }
-                val json = JSONObject(result.body)
-                val schedule = fromJson(json)
-                if (!schedule.isValid) {
-                    throw ScheduleError("The server sent back schedule data that didn't validate.")
-                }
-                File(context.filesDir, CACHE_FILE).writeText(result.body)
-                markFetched(context)
-                schedule
+        ): Schedule = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val result = httpClient.get(URI(REMOTE_URL))
+            if (result.statusCode != 200) {
+                throw ScheduleError("The server responded with status ${result.statusCode}.")
             }
+            val json = JSONObject(result.body)
+            val schedule = fromJson(json)
+            if (!schedule.isValid) {
+                throw ScheduleError("The server sent back schedule data that didn't validate.")
+            }
+            File(context.filesDir, CACHE_FILE).writeText(result.body)
+            markFetched(context)
+            schedule
+        }
 
         private fun fromJson(json: JSONObject): Schedule {
             fun parseStops(key: String): List<String> {

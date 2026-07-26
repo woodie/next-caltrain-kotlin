@@ -27,17 +27,17 @@ class CaltrainServiceSpec : DescribeSpec({
         describe(".direction()") {
             lateinit var origin: String
             lateinit var destin: String
-            lateinit var dir: String
-            justBeforeEach { dir = CaltrainService.direction(origin, destin, SpecFixtures.stops) }
+            lateinit var direction: String
+            justBeforeEach { direction = CaltrainService.direction(origin, destin, SpecFixtures.stops) }
 
             context("when traveling from San Francisco to Gilroy") {
                 beforeEach { origin = SpecFixtures.sanFrancisco; destin = SpecFixtures.gilroy }
-                it("is South") { dir shouldBe "South" }
+                it("is South") { direction shouldBe "South" }
             }
 
             context("when traveling from Gilroy to San Francisco") {
                 beforeEach { origin = SpecFixtures.gilroy; destin = SpecFixtures.sanFrancisco }
-                it("is North") { dir shouldBe "North" }
+                it("is North") { direction shouldBe "North" }
             }
         }
 
