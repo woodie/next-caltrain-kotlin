@@ -1,6 +1,7 @@
 package com.netpress.nextcaltrain
 
 import android.content.Context
+import com.netpress.kwick.justBeforeEach
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -41,9 +42,10 @@ class TripViewModelSpec : DescribeSpec({
             // Weekday-only schedule. Friday -> Saturday = weekend with no SC service.
 
             lateinit var viewModel: TripViewModel
-            fun buildViewModel(minutes: Int) {
+            var mins = 0
+            justBeforeEach {
                 GoodTimes.debugOverrideDotw = 5 // Friday
-                GoodTimes.debugOverrideMinutes = minutes
+                GoodTimes.debugOverrideMinutes = mins
                 viewModel = makeViewModel(
                     SpecFixtures.weekdayOnlySchedule(),
                     SpecFixtures.sanFrancisco,
@@ -52,7 +54,7 @@ class TripViewModelSpec : DescribeSpec({
             }
 
             context("and all of today's trips have already departed") {
-                beforeEach { buildViewModel(1000) }
+                beforeEach { mins = 1000 }
 
                 it("still has today's trips available") { viewModel.trips.value.shouldNotBeEmpty() }
                 it("has no future (tomorrow) trips appended") {
@@ -68,7 +70,7 @@ class TripViewModelSpec : DescribeSpec({
             }
 
             context("and some of today's trips are still upcoming") {
-                beforeEach { buildViewModel(100) }
+                beforeEach { mins = 100 }
 
                 it("selects the next upcoming trip") {
                     viewModel.offset.value shouldBe viewModel.nextIndex.value
@@ -81,9 +83,10 @@ class TripViewModelSpec : DescribeSpec({
             // Monday -> Tuesday, both weekday.
 
             lateinit var viewModel: TripViewModel
-            fun buildViewModel(minutes: Int) {
+            var mins = 0
+            justBeforeEach {
                 GoodTimes.debugOverrideDotw = 1 // Monday
-                GoodTimes.debugOverrideMinutes = minutes
+                GoodTimes.debugOverrideMinutes = mins
                 val schedule = SpecFixtures.schedule {
                     weekday(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
                     weekend(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
@@ -92,7 +95,7 @@ class TripViewModelSpec : DescribeSpec({
             }
 
             context("and all of today's trips have already departed") {
-                beforeEach { buildViewModel(1000) }
+                beforeEach { mins = 1000 }
 
                 it("appends tomorrow's trips, marked as future") {
                     viewModel.trips.value.any { it.isFuture }.shouldBeTrue()
@@ -107,7 +110,7 @@ class TripViewModelSpec : DescribeSpec({
             }
 
             context("and some of today's trips are still upcoming") {
-                beforeEach { buildViewModel(100) }
+                beforeEach { mins = 100 }
 
                 it("selects today's trip, not a future one") {
                     viewModel.trips.value[viewModel.offset.value].isFuture.shouldBeFalse()

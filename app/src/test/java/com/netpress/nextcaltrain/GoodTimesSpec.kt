@@ -151,11 +151,11 @@ class GoodTimesSpec : DescribeSpec({
 
         context("when 'today' is fixed via debugOverrideDotw") {
             var dotw = 0
-            afterEach { GoodTimes.debugOverrideDotw = null }
             justBeforeEach {
                 GoodTimes.debugOverrideDotw = dotw
                 gt = GoodTimes()
             }
+            afterEach { GoodTimes.debugOverrideDotw = null }
 
             context("and today is Friday (5)") {
                 beforeEach { dotw = 5 }

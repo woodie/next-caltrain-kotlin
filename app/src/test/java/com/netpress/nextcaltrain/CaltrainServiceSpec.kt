@@ -1,5 +1,6 @@
 package com.netpress.nextcaltrain
 
+import com.netpress.kwick.justBeforeEach
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -24,28 +25,19 @@ class CaltrainServiceSpec : DescribeSpec({
         }
 
         describe(".direction()") {
-            context("when traveling from San Francisco to Gilroy") {
-                val dir = CaltrainService.direction(
-                    SpecFixtures.sanFrancisco,
-                    SpecFixtures.gilroy,
-                    SpecFixtures.stops,
-                )
+            lateinit var origin: String
+            lateinit var destin: String
+            lateinit var dir: String
+            justBeforeEach { dir = CaltrainService.direction(origin, destin, SpecFixtures.stops) }
 
-                it("is South") {
-                    dir shouldBe "South"
-                }
+            context("when traveling from San Francisco to Gilroy") {
+                beforeEach { origin = SpecFixtures.sanFrancisco; destin = SpecFixtures.gilroy }
+                it("is South") { dir shouldBe "South" }
             }
 
             context("when traveling from Gilroy to San Francisco") {
-                val dir = CaltrainService.direction(
-                    SpecFixtures.gilroy,
-                    SpecFixtures.sanFrancisco,
-                    SpecFixtures.stops,
-                )
-
-                it("is North") {
-                    dir shouldBe "North"
-                }
+                beforeEach { origin = SpecFixtures.gilroy; destin = SpecFixtures.sanFrancisco }
+                it("is North") { dir shouldBe "North" }
             }
         }
 
