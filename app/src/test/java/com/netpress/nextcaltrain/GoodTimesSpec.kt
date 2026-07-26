@@ -1,6 +1,6 @@
 package com.netpress.nextcaltrain
 
-import com.netpress.justbeforeeach.justBeforeEach
+import com.netpress.kwick.justBeforeEach
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
