@@ -13,6 +13,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # just-before-each has no published artifact yet -- settings.gradle.kts's
+      # includeBuild("../just-before-each") needs it checked out as a real
+      # sibling directory. `path: ../just-before-each` is relative to
+      # $GITHUB_WORKSPACE, so this lands exactly at that sibling path -- same
+      # trick kotidy's consumers used before it was published to the Gradle
+      # Plugin Portal. Drop this step once just-before-each ships a real
+      # Maven Central release and app/build.gradle.kts pins a version instead.
+      - name: Checkout just-before-each
+        uses: actions/checkout@v4
+        with:
+          repository: woodie/just-before-each
+          path: ../just-before-each
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:

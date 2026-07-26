@@ -24,3 +24,12 @@ dependencyResolutionManagement {
 
 rootProject.name = "Next Caltrain"
 include(":app")
+
+// Composite build, not pluginManagement -- just-before-each is a plain
+// library (testImplementation), not a Gradle plugin like kotidy, so a
+// regular dependency substitution in the main body is all Gradle needs to
+// resolve app/build.gradle.kts's testImplementation("com.netpress:just-
+// before-each:...") against the local checkout instead of Maven Central.
+// No published artifact yet -- see that repo's own docs/COWORK.md
+// "Packaging". Requires ../just-before-each to exist as a sibling checkout.
+includeBuild("../just-before-each")

@@ -108,6 +108,9 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.arch.core.testing)
     testImplementation(libs.mockk)
+    // Composite build via settings.gradle.kts's includeBuild -- no published
+    // artifact yet, see just-before-each's own docs/COWORK.md "Packaging".
+    testImplementation("com.netpress:just-before-each:0.1.0")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

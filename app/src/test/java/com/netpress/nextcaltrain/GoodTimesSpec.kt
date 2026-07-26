@@ -1,5 +1,6 @@
 package com.netpress.nextcaltrain
 
+import com.netpress.justbeforeeach.justBeforeEach
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
@@ -149,14 +150,15 @@ class GoodTimesSpec : DescribeSpec({
         }
 
         context("when 'today' is fixed via debugOverrideDotw") {
-            fun setDotw(dotw: Int) {
+            var dotw = 0
+            afterEach { GoodTimes.debugOverrideDotw = null }
+            justBeforeEach {
                 GoodTimes.debugOverrideDotw = dotw
                 gt = GoodTimes()
             }
-            afterEach { GoodTimes.debugOverrideDotw = null }
 
             context("and today is Friday (5)") {
-                beforeEach { setDotw(5) }
+                beforeEach { dotw = 5 }
 
                 it("computes tomorrow as Saturday (6)") {
                     gt.dotw shouldBe 5
@@ -164,7 +166,7 @@ class GoodTimesSpec : DescribeSpec({
                 }
             }
             context("and today is Saturday (6)") {
-                beforeEach { setDotw(6) }
+                beforeEach { dotw = 6 }
 
                 it("computes tomorrow as Sunday (0), wrapping the week") {
                     gt.dotw shouldBe 6
@@ -172,7 +174,7 @@ class GoodTimesSpec : DescribeSpec({
                 }
             }
             context("and today is Sunday (0)") {
-                beforeEach { setDotw(0) }
+                beforeEach { dotw = 0 }
 
                 it("computes tomorrow as Monday (1)") {
                     gt.dotw shouldBe 0
