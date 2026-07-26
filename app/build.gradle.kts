@@ -110,7 +110,7 @@ dependencies {
     testImplementation(libs.mockk)
     // Composite build via settings.gradle.kts's includeBuild -- no published
     // artifact yet, see kwick's own docs/COWORK.md "Packaging".
-    testImplementation("com.netpress:kwick:0.1.0")
+    testImplementation("com.netpress:kwick:0.1.1")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
