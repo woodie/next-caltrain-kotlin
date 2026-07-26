@@ -15,16 +15,19 @@ jobs:
 
       # kwick has no published artifact yet -- settings.gradle.kts's
       # includeBuild("../kwick") needs it checked out as a real sibling
-      # directory. `path: ../kwick` is relative to $GITHUB_WORKSPACE, so this
-      # lands exactly at that sibling path -- same trick kotidy's consumers
-      # used before it was published to the Gradle Plugin Portal. Drop this
-      # step once kwick ships a real Maven Central release and
-      # app/build.gradle.kts pins a version instead.
+      # directory. actions/checkout@v4 refuses a `path` outside
+      # $GITHUB_WORKSPACE ("Repository path ... is not under ..."), so this
+      # checks out into a subdirectory first, then moves it up to the real
+      # sibling location. Drop both steps once kwick ships a real Maven
+      # Central release and app/build.gradle.kts pins a version instead.
       - name: Checkout kwick
         uses: actions/checkout@v4
         with:
           repository: woodie/kwick
-          path: ../kwick
+          path: kwick-checkout
+
+      - name: Move kwick to a sibling directory
+        run: mv kwick-checkout ../kwick
 
       - name: Set up JDK
         uses: actions/setup-java@v4
