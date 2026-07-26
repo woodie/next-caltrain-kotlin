@@ -111,6 +111,10 @@ dependencies {
     // Composite build via settings.gradle.kts's includeBuild -- no published
     // artifact yet, see kwick's own docs/COWORK.md "Packaging".
     testImplementation("com.netpress:kwick:0.1.1")
+    // Android's own org.json.JSONObject is stubbed to throw "not mocked" in plain JVM unit
+    // tests (no Robolectric here). The real org.json:json artifact shadows that stub on the
+    // test classpath so Schedule.fromJson's parsing actually runs in ScheduleSpec.
+    testImplementation("org.json:json:20240303")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
