@@ -3,8 +3,50 @@ package com.netpress.nextcaltrain
 import android.content.Context
 import org.json.JSONObject
 import java.io.File
-import java.net.HttpURLConnection
-import java.net.URL
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.time.Duration
+
+class ScheduleError(message: String) : Exception(message)
+
+class ScheduleHttpResult(
+    val statusCode: Int,
+    val body: String,
+)
+
+// Test seam matching huck's ScanHttpClient interface -- lets ScheduleSpec fake server responses
+// (status codes, bodies) without a real network call. JdkHttpScheduleHttpClient below is the real
+// implementation, backed by java.net.http.HttpClient (matching huck's own JdkHttpScanHttpClient),
+// replacing the java.net.HttpURLConnection this file used directly before -- HttpURLConnection has
+// no seam of its own to inject a fake into.
+interface ScheduleHttpClient {
+    fun get(url: URI): ScheduleHttpResult
+}
+
+class JdkHttpScheduleHttpClient(
+    private val httpClient: HttpClient =
+        HttpClient
+            .newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build(),
+) : ScheduleHttpClient {
+    override fun get(url: URI): ScheduleHttpResult {
+        val request =
+            HttpRequest
+                .newBuilder(url)
+                .timeout(REQUEST_TIMEOUT)
+                .GET()
+                .build()
+        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        return ScheduleHttpResult(response.statusCode(), response.body())
+    }
+
+    companion object {
+        private val REQUEST_TIMEOUT: Duration = Duration.ofSeconds(30)
+    }
+}
 
 // Holds the parsed schedule.json data; uses Android's built-in JSONObject, no third-party JSON lib.
 data class Schedule(
@@ -22,8 +64,9 @@ data class Schedule(
     companion object {
         // Defaults to prod; override via `scheduleUrl=` in local.properties (see build.gradle.kts).
         private val REMOTE_URL = BuildConfig.SCHEDULE_URL
-        private const val CACHE_FILE = "schedule.json"
-        private const val FETCH_TIMEOUT_MS = 10_000
+
+        // internal (not private) so tests can check the real cache filename directly.
+        internal const val CACHE_FILE = "schedule.json"
 
         // internal (not private) so tests can key a fake SharedPreferences the same way as production.
         internal const val PREFS_NAME = "nextcaltrain"
@@ -56,26 +99,23 @@ data class Schedule(
                 .apply()
         }
 
-        suspend fun fetchFromNetwork(context: Context): Schedule =
+        suspend fun fetchFromNetwork(
+            context: Context,
+            httpClient: ScheduleHttpClient = JdkHttpScheduleHttpClient(),
+        ): Schedule =
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                val url = URL(REMOTE_URL)
-                val connection = url.openConnection() as HttpURLConnection
-                connection.connectTimeout = FETCH_TIMEOUT_MS
-                connection.readTimeout = FETCH_TIMEOUT_MS
-                try {
-                    if (connection.responseCode != 200) {
-                        throw Exception("HTTP ${connection.responseCode}")
-                    }
-                    val text = connection.inputStream.bufferedReader().readText()
-                    val json = JSONObject(text)
-                    val schedule = fromJson(json)
-                    if (!schedule.isValid) throw Exception("Invalid schedule data")
-                    File(context.filesDir, CACHE_FILE).writeText(text)
-                    markFetched(context)
-                    schedule
-                } finally {
-                    connection.disconnect()
+                val result = httpClient.get(URI(REMOTE_URL))
+                if (result.statusCode != 200) {
+                    throw ScheduleError("The server responded with status ${result.statusCode}.")
                 }
+                val json = JSONObject(result.body)
+                val schedule = fromJson(json)
+                if (!schedule.isValid) {
+                    throw ScheduleError("The server sent back schedule data that didn't validate.")
+                }
+                File(context.filesDir, CACHE_FILE).writeText(result.body)
+                markFetched(context)
+                schedule
             }
 
         private fun fromJson(json: JSONObject): Schedule {
