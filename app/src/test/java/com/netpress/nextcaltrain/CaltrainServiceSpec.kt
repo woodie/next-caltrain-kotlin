@@ -45,12 +45,18 @@ class CaltrainServiceSpec : DescribeSpec({
             val schedule = SpecFixtures.weekdayOnlySchedule()
             val service = CaltrainService(schedule)
 
+            lateinit var from: String
+            lateinit var to: String
+            lateinit var scheduleType: ScheduleType
+            lateinit var routes: List<Trip>
+            justBeforeEach { routes = service.routes(from, to, scheduleType) }
+
             context("for a direct electric trip (San Francisco to San Jose Diridon)") {
-                val routes = service.routes(
-                    SpecFixtures.sanFrancisco,
-                    SpecFixtures.sanJoseDiridon,
-                    ScheduleType.WEEKDAY,
-                )
+                beforeEach {
+                    from = SpecFixtures.sanFrancisco
+                    to = SpecFixtures.sanJoseDiridon
+                    scheduleType = ScheduleType.WEEKDAY
+                }
 
                 it("returns one direct trip") {
                     routes shouldHaveSize 1
@@ -68,11 +74,11 @@ class CaltrainServiceSpec : DescribeSpec({
             }
 
             context("for a direct diesel trip (Morgan Hill to Gilroy)") {
-                val routes = service.routes(
-                    SpecFixtures.morganHill,
-                    SpecFixtures.gilroy,
-                    ScheduleType.WEEKDAY,
-                )
+                beforeEach {
+                    from = SpecFixtures.morganHill
+                    to = SpecFixtures.gilroy
+                    scheduleType = ScheduleType.WEEKDAY
+                }
 
                 it("returns one direct trip") {
                     routes shouldHaveSize 1
@@ -86,7 +92,11 @@ class CaltrainServiceSpec : DescribeSpec({
             }
 
             context("for an unknown station") {
-                val routes = service.routes("Unknown", SpecFixtures.gilroy, ScheduleType.WEEKDAY)
+                beforeEach {
+                    from = "Unknown"
+                    to = SpecFixtures.gilroy
+                    scheduleType = ScheduleType.WEEKDAY
+                }
 
                 it("returns no trips") {
                     routes.shouldBeEmpty()
@@ -94,11 +104,11 @@ class CaltrainServiceSpec : DescribeSpec({
             }
 
             context("for a transfer trip (San Francisco to Gilroy)") {
-                val routes = service.routes(
-                    SpecFixtures.sanFrancisco,
-                    SpecFixtures.gilroy,
-                    ScheduleType.WEEKDAY,
-                )
+                beforeEach {
+                    from = SpecFixtures.sanFrancisco
+                    to = SpecFixtures.gilroy
+                    scheduleType = ScheduleType.WEEKDAY
+                }
 
                 it("returns one trip") {
                     routes shouldHaveSize 1
@@ -127,11 +137,11 @@ class CaltrainServiceSpec : DescribeSpec({
             }
 
             context("for a transfer trip (Gilroy to San Francisco)") {
-                val routes = service.routes(
-                    SpecFixtures.gilroy,
-                    SpecFixtures.sanFrancisco,
-                    ScheduleType.WEEKDAY,
-                )
+                beforeEach {
+                    from = SpecFixtures.gilroy
+                    to = SpecFixtures.sanFrancisco
+                    scheduleType = ScheduleType.WEEKDAY
+                }
 
                 it("returns one trip") {
                     routes shouldHaveSize 1
@@ -157,11 +167,11 @@ class CaltrainServiceSpec : DescribeSpec({
             }
 
             context("for a route with no service (weekend, empty fixture tables)") {
-                val routes = service.routes(
-                    SpecFixtures.sanFrancisco,
-                    SpecFixtures.gilroy,
-                    ScheduleType.WEEKEND,
-                )
+                beforeEach {
+                    from = SpecFixtures.sanFrancisco
+                    to = SpecFixtures.gilroy
+                    scheduleType = ScheduleType.WEEKEND
+                }
 
                 it("returns no trips") {
                     routes.shouldBeEmpty()
