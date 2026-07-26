@@ -191,6 +191,58 @@ trick, plus the same unconditional blank-line-before-suite rule, from the
 opposite starting point — see its `docs/COWORK.md` "Test output formatting"
 section.
 
+## Testing approach
+
+`justBeforeEach` (via [kwick](https://github.com/woodie/kwick)) hoists a
+shared "act" step above sibling contexts that only vary the input. Not
+automatically worth wiring in everywhere -- reviewed every spec file here
+(and its Swift sibling) to separate real DRY wins from cases where it'd
+cost more readability than it saves.
+
+**Wired in:** `CaltrainScheduleSpec`'s `.optionIndexFor()`/`.forTomorrow()`,
+`CaltrainServiceSpec`'s `.direction()` and `#routes()`, `TripViewModelSpec`'s
+two "for a route with..." contexts, `GoodTimesSpec`'s `debugOverrideDotw`
+context (the original motivating case) -- each had a real, multi-line act
+duplicated across 2+ sibling contexts. `#routes()` is the biggest win: six
+sibling contexts, several with multiple `it`s sharing one hoisted result --
+the first real usage of several assertions reading one subject, closer to
+RSpec's actual `subject` than any earlier case.
+
+**Skipped on purpose:** `ScheduleSpec`'s three `fetchedToday()` contexts
+(setup varies more than the one-line act), `GoodTimesSpec`'s
+`.partTime()`/`.fullTime()` (one `it` per context, self-contained
+one-liners), `CaltrainServiceSpec`'s `#nextIndex()` (what's under test
+differs enough per context that sharing the `trips` fixture wouldn't
+clarify anything). Hoisting any of these trades a readable one-liner for a
+var + block + `beforeEach`, for no real duplication savings.
+
+**Naming as `subject`:** kwick has no dedicated `subject {}` construct --
+the convention is a plain, well-named shared var (`result`, `dir`,
+`routes`) that every `it` in the context reads. That naming choice is the
+`subject` equivalent; no extra feature needed.
+
+**The `runCatching`-outcome convention doesn't apply to real throwing
+calls.** kwick's own docs describe hoisting a possibly-throwing action
+into `justBeforeEach`, capturing the outcome via `runCatching`. Checked
+`zouk`'s `ScanClientSpec.swift` and `huck`'s `ScanClientSpec.kt` -- the two
+real places in this account with actual network-failure coverage -- and
+neither uses that pattern. Both inject a fake HTTP client
+(`ScanHTTPClient`/`ScanHttpClient`) and call the throwing method directly
+inside each `it`, asserting with `shouldThrow`/`throwError`. Hoisting a
+throwing act into setup is exactly the trap that convention exists to
+avoid, so testing a real exception just doesn't need `justBeforeEach` at
+all.
+
+`Schedule.fetchFromNetwork()` was the one real gap matching this shape --
+untested, no DI seam, `HttpURLConnection` with nothing to fake. Fixed to
+match huck's exact pattern: `ScheduleHttpClient` interface,
+`JdkHttpScheduleHttpClient` (real implementation, `java.net.http.HttpClient`
+now instead of `HttpURLConnection`), `FakeScheduleHttpClient` (tests),
+`ScheduleError` replacing two generic `Exception(...)` throws.
+`ScheduleSpec.kt`'s new `Schedule.fetchFromNetwork()` describe covers all
+three outcomes (200+valid, non-2xx, 200+invalid) the same inline-`shouldThrow`
+way as huck -- not `justBeforeEach`.
+
 ## Install and run on emulator
 ```bash
 ./gradlew installDebug && ~/Library/Android/sdk/platform-tools/adb shell am start -n com.netpress.nextcaltrain/.MainActivity
