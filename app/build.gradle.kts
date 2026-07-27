@@ -108,9 +108,11 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.arch.core.testing)
     testImplementation(libs.mockk)
-    // Composite build via settings.gradle.kts's includeBuild -- no published
-    // artifact yet, see kwick's own docs/COWORK.md "Packaging".
-    testImplementation("com.netpress:kwick:0.1.1")
+    // Published to Maven Central as of v0.1.2 (see kwick's own
+    // docs/COWORK.md "Packaging") -- no longer a composite build, so this
+    // needs a real version pin now. Bump by hand whenever a new kwick
+    // release ships.
+    testImplementation("com.netpress:kwick:0.1.2")
     // Android's own org.json.JSONObject is stubbed to throw "not mocked" in plain JVM unit
     // tests (no Robolectric here). The real org.json:json artifact shadows that stub on the
     // test classpath so Schedule.fromJson's parsing actually runs in ScheduleSpec.
