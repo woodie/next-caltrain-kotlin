@@ -37,15 +37,18 @@ class TripViewModelSpec : DescribeSpec({
         }
 
     describe("TripViewModel") {
+        var dotw = 0
+        var mins = 0
+        justBeforeEach {
+            GoodTimes.debugOverrideDotw = dotw
+            GoodTimes.debugOverrideMinutes = mins
+        }
 
         context("for a route with no service tomorrow") {
             // Weekday-only schedule. Friday -> Saturday = weekend with no SC service.
-
             lateinit var viewModel: TripViewModel
-            var mins = 0
+            beforeEach { dotw = 5 } // Friday
             justBeforeEach {
-                GoodTimes.debugOverrideDotw = 5 // Friday
-                GoodTimes.debugOverrideMinutes = mins
                 viewModel = makeViewModel(
                     SpecFixtures.weekdayOnlySchedule(),
                     SpecFixtures.sanFrancisco,
@@ -83,10 +86,8 @@ class TripViewModelSpec : DescribeSpec({
             // Monday -> Tuesday, both weekday.
 
             lateinit var viewModel: TripViewModel
-            var mins = 0
+            beforeEach { dotw = 1; mins = 0 } // Monday
             justBeforeEach {
-                GoodTimes.debugOverrideDotw = 1 // Monday
-                GoodTimes.debugOverrideMinutes = mins
                 val schedule = SpecFixtures.schedule {
                     weekday(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
                     weekend(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
