@@ -3,11 +3,8 @@ package com.netpress.nextcaltrain
 import android.content.Context
 import org.json.JSONObject
 import java.io.File
+import java.net.HttpURLConnection
 import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
-import java.time.Duration
 
 class ScheduleError(message: String) : Exception(message)
 
@@ -15,33 +12,37 @@ class ScheduleHttpResult(val statusCode: Int, val body: String)
 
 // Test seam matching huck's ScanHttpClient interface -- lets ScheduleSpec fake server responses
 // (status codes, bodies) without a real network call. JdkHttpScheduleHttpClient below is the real
-// implementation, backed by java.net.http.HttpClient (matching huck's own JdkHttpScanHttpClient),
-// replacing the java.net.HttpURLConnection this file used directly before -- HttpURLConnection has
-// no seam of its own to inject a fake into.
+// implementation. This briefly used java.net.http.HttpClient to match huck's own
+// JdkHttpScanHttpClient (a desktop JVM app), but that class doesn't exist on Android's runtime at
+// all -- confirmed via a real NoClassDefFoundError on-device (java.net.http is a desktop/server
+// JDK API, never shipped as part of Android's libcore, at any API level). Reverted to
+// HttpURLConnection, wrapped behind this same interface so the test seam is unaffected.
 interface ScheduleHttpClient {
     fun get(url: URI): ScheduleHttpResult
 }
 
 class JdkHttpScheduleHttpClient(
-    private val httpClient: HttpClient =
-        HttpClient
-            .newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .build(),
+    private val connectTimeoutMs: Int = CONNECT_TIMEOUT_MS,
+    private val readTimeoutMs: Int = READ_TIMEOUT_MS,
 ) : ScheduleHttpClient {
     override fun get(url: URI): ScheduleHttpResult {
-        val request =
-            HttpRequest
-                .newBuilder(url)
-                .timeout(REQUEST_TIMEOUT)
-                .GET()
-                .build()
-        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        return ScheduleHttpResult(response.statusCode(), response.body())
+        val connection = url.toURL().openConnection() as HttpURLConnection
+        connection.connectTimeout = connectTimeoutMs
+        connection.readTimeout = readTimeoutMs
+        connection.requestMethod = "GET"
+        return try {
+            val statusCode = connection.responseCode
+            val stream = if (statusCode in 200..299) connection.inputStream else connection.errorStream
+            val body = stream?.bufferedReader()?.use { it.readText() } ?: ""
+            ScheduleHttpResult(statusCode, body)
+        } finally {
+            connection.disconnect()
+        }
     }
 
     companion object {
-        private val REQUEST_TIMEOUT: Duration = Duration.ofSeconds(30)
+        private const val CONNECT_TIMEOUT_MS = 10_000
+        private const val READ_TIMEOUT_MS = 30_000
     }
 }
 
