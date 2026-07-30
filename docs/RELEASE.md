@@ -29,6 +29,43 @@ submission, or a routine update to an already-live listing.
 - **App icon (512×512 PNG) and feature graphic (1024×500 PNG)** — not yet
   created as of this writing. Needed before the store listing can go live.
 
+## Restoring the keystore on a new machine
+
+`local.properties` is per-machine and gitignored, so a fresh checkout (or a
+new dev machine) starts with none of the four release-signing properties
+set -- `sdk.dir` may already be there from Android Studio's own setup, but
+`RELEASE_STORE_FILE`/`RELEASE_STORE_PASSWORD`/`RELEASE_KEY_ALIAS`/
+`RELEASE_KEY_PASSWORD` need to be added by hand from backup:
+
+1. Put the actual `.jks`/`.keystore` file somewhere permanent and *outside*
+   any git repo -- e.g. `~/.android-keystores/next-caltrain-release.jks` --
+   so it can never end up committed even if `.gitignore` were ever wrong.
+2. Add the four lines below to `local.properties` yourself, typed directly
+   (don't paste real passwords into a chat/AI session -- an assistant
+   helping with this step should tell you where things go, not type your
+   secrets in for you):
+   ```
+   RELEASE_STORE_FILE=/absolute/path/to/next-caltrain-release.jks
+   RELEASE_STORE_PASSWORD=<your real password>
+   RELEASE_KEY_ALIAS=<your real alias>
+   RELEASE_KEY_PASSWORD=<your real password>
+   ```
+3. Verify: `./gradlew bundleRelease` should succeed and produce
+   `app/build/outputs/bundle/release/app-release.aab`. `hasReleaseSigning`
+   in `app/build.gradle.kts` gates on all four properties being present --
+   if any are missing or wrong, the build still compiles but silently falls
+   back to an unsigned/debug-signed `release` build type instead of failing
+   loudly, so don't just trust a green build; confirm the signature too:
+   ```
+   ~/Library/Android/sdk/build-tools/<version>/apksigner verify --print-certs \
+     app/build/outputs/bundle/release/app-release.aab
+   ```
+
+See `docs/COWORK.md` → "Release signing" for how to generate a *new*
+keystore from scratch (only relevant if the backup is genuinely gone, since
+losing this file means the existing Play Store listing can never be updated
+again under any account).
+
 ## One-time account & app setup (skip once done)
 
 **Landmine**: don't assume an old developer account is still usable just
