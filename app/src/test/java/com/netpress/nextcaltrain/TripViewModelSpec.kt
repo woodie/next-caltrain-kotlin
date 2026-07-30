@@ -24,8 +24,8 @@ class TripViewModelSpec : DescribeSpec({
     afterSpec { Dispatchers.resetMain() }
 
     afterEach {
-        GoodTimes.debugOverrideMinutes = null
-        GoodTimes.debugOverrideDotw = null
+        GoodTimes.minutesSeed = null
+        GoodTimes.dotwSeed = null
     }
 
     // Relaxed mock: TripViewModel reads stop prefs in init{}, but every test overwrites origin/destination anyway.
@@ -40,8 +40,8 @@ class TripViewModelSpec : DescribeSpec({
         var dotw = 0
         var mins = 0
         justBeforeEach {
-            GoodTimes.debugOverrideDotw = dotw
-            GoodTimes.debugOverrideMinutes = mins
+            GoodTimes.dotwSeed = dotw
+            GoodTimes.minutesSeed = mins
         }
 
         context("for a route with no service tomorrow") {
@@ -122,8 +122,8 @@ class TripViewModelSpec : DescribeSpec({
         context("for a route with no service on any day") {
             lateinit var viewModel: TripViewModel
             beforeEach {
-                GoodTimes.debugOverrideDotw = 1
-                GoodTimes.debugOverrideMinutes = 100
+                GoodTimes.dotwSeed = 1
+                GoodTimes.minutesSeed = 100
                 viewModel = makeViewModel(
                     SpecFixtures.schedule { },
                     SpecFixtures.sanFrancisco,
@@ -141,8 +141,8 @@ class TripViewModelSpec : DescribeSpec({
         context("for a future trip's schedule type (Friday -> Saturday)") {
             lateinit var viewModel: TripViewModel
             beforeEach {
-                GoodTimes.debugOverrideDotw = 5 // Friday
-                GoodTimes.debugOverrideMinutes = 1000
+                GoodTimes.dotwSeed = 5 // Friday
+                GoodTimes.minutesSeed = 1000
                 val schedule = SpecFixtures.schedule {
                     weekday(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
                     weekend(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
@@ -168,8 +168,8 @@ class TripViewModelSpec : DescribeSpec({
             // Regression coverage for the reset-button-stuck-on bug; see docs/COMMENTS.md.
             lateinit var viewModel: TripViewModel
             beforeEach {
-                GoodTimes.debugOverrideDotw = 1 // Monday
-                GoodTimes.debugOverrideMinutes = 100
+                GoodTimes.dotwSeed = 1 // Monday
+                GoodTimes.minutesSeed = 100
                 val schedule = SpecFixtures.schedule {
                     weekday(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)
                     weekend(electric = SpecFixtures.Service.NORMAL, diesel = SpecFixtures.Service.NORMAL)

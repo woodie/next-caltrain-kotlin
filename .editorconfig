@@ -28,10 +28,9 @@ max_line_length = 120
 ktlint_function_naming_ignore_when_annotated_with = Composable
 
 # Allow semicolon-joined one-liners (e.g. `val o = origin.value; val d = destination.value`
-# in HomeScreen.kt, or test beforeEach hooks like
-# `GoodTimes.debugOverrideMinutes = 720; gt = GoodTimes()`). standard:statement-wrapping
-# otherwise requires each statement on its own line and forbids inline lambda
-# bodies -- both of which this convention relies on, in app code and specs alike.
+# in HomeScreen.kt). standard:statement-wrapping otherwise requires each
+# statement on its own line and forbids inline lambda bodies -- both of which
+# this convention relies on, in app code and specs alike.
 ktlint_standard_statement-wrapping = disabled
 
 # This project's const vals mirror the iOS Swift codebase's `let` naming

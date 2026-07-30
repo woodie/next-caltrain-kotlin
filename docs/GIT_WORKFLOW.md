@@ -106,9 +106,10 @@ After merging a hotfix, **re-release to the Play Store** (see below).
    ```
 
 3. **Edge cases** — if the change touches schedule logic, routing, or time
-   calculations, test with debug overrides (see `GoodTimes.kt`'s
-   `debugOverrideMinutes`/`debugOverrideDotw`, same convention as the Swift
-   sibling's `docs/ROLLOVER_NOTES.md`):
+   calculations, test with `GoodTimes.kt`'s test seeds (`seeded(dotw, mins)`,
+   or the `dotwSeed`/`minutesSeed` statics for specs that go through
+   `TripViewModel`; same convention as the Swift sibling's
+   `docs/ROLLOVER_NOTES.md`):
    - Test South County no-service behavior (Friday evening → Saturday).
    - Test schedule type cycling (weekday ↔ weekend ↔ holiday).
 

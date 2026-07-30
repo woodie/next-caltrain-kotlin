@@ -208,6 +208,16 @@ sibling contexts, several with multiple `it`s sharing one hoisted result --
 the first real usage of several assertions reading one subject, closer to
 RSpec's actual `subject` than any earlier case.
 
+**Update:** `debugOverrideDotw`/`debugOverrideMinutes` were later renamed to
+`dotwSeed`/`minutesSeed` (dropping "debug" -- this is a testing seam, not a
+debugging tool -- and "override," which wrongly implied a live, ongoing
+effect rather than a value read once at construction). `GoodTimesSpec` and
+`CaltrainScheduleSpec` also switched to a `GoodTimes.seeded(dotw, mins)`
+factory, since both construct `GoodTimes` directly and don't need the
+statics at all; `TripViewModelSpec` keeps using the (renamed) statics, since
+`TripViewModel` constructs `GoodTimes()` internally with no seam to pass a
+seed through. See `docs/COMMENTS.md` for the full reasoning.
+
 **Skipped on purpose:** `ScheduleSpec`'s three `fetchedToday()` contexts
 (setup varies more than the one-line act), `GoodTimesSpec`'s
 `.partTime()`/`.fullTime()` (one `it` per context, self-contained
