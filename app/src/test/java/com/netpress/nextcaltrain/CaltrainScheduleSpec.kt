@@ -6,11 +6,6 @@ import io.kotest.matchers.shouldBe
 
 class CaltrainScheduleSpec : DescribeSpec({
 
-    afterEach {
-        GoodTimes.debugOverrideMinutes = null
-        GoodTimes.debugOverrideDotw = null
-    }
-
     describe("CaltrainSchedule") {
 
         describe(".optionIndexFor()") {
@@ -71,18 +66,19 @@ class CaltrainScheduleSpec : DescribeSpec({
 
         describe(".forTomorrow()") {
             lateinit var result: ScheduleType
-            justBeforeEach { result = CaltrainSchedule.forTomorrow(GoodTimes(), emptyMap()) }
+            var dotw = 0
+            justBeforeEach { result = CaltrainSchedule.forTomorrow(GoodTimes.seeded(dotw = dotw), emptyMap()) }
 
             context("when today is Friday (5)") {
-                beforeEach { GoodTimes.debugOverrideDotw = 5 }
+                beforeEach { dotw = 5 }
                 it("returns WEEKEND for tomorrow (Saturday)") { result shouldBe ScheduleType.WEEKEND }
             }
             context("when today is Sunday (0)") {
-                beforeEach { GoodTimes.debugOverrideDotw = 0 }
+                beforeEach { dotw = 0 }
                 it("returns WEEKDAY for tomorrow (Monday)") { result shouldBe ScheduleType.WEEKDAY }
             }
             context("when today is Thursday (4)") {
-                beforeEach { GoodTimes.debugOverrideDotw = 4 }
+                beforeEach { dotw = 4 }
                 it("returns WEEKDAY for tomorrow (Friday)") { result shouldBe ScheduleType.WEEKDAY }
             }
         }

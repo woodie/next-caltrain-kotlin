@@ -82,9 +82,9 @@ class GoodTimesSpec : DescribeSpec({
             }
         }
 
-        context("when 'now' is fixed via debugOverrideMinutes") {
+        context("when 'now' is fixed via GoodTimes.seeded") {
             var minutes = 0
-            beforeEach { GoodTimes.debugOverrideMinutes = 720; gt = GoodTimes() }
+            beforeEach { gt = GoodTimes.seeded(mins = 720) }
 
             describe("#inThePast()") {
                 context("when the target is before now") {
@@ -149,10 +149,9 @@ class GoodTimesSpec : DescribeSpec({
             }
         }
 
-        context("when 'today' is fixed via debugOverrideDotw") {
+        context("when 'today' is fixed via GoodTimes.seeded") {
             var dotw = 0
-            justBeforeEach { GoodTimes.debugOverrideDotw = dotw; gt = GoodTimes() }
-            afterEach { GoodTimes.debugOverrideDotw = null }
+            justBeforeEach { gt = GoodTimes.seeded(dotw = dotw) }
 
             context("and today is Friday (5)") {
                 beforeEach { dotw = 5 }

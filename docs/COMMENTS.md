@@ -19,12 +19,22 @@ Full history: subtracts 2 hours from the real clock so that trains running
 past midnight (e.g. 24:05 = 1445 minutes) still appear on "today's" schedule
 rather than rolling to tomorrow at midnight.
 
-### `GoodTimes.debugOverrideMinutes` / `GoodTimes.debugOverrideDotw`
-Kept a one-line comment on each: "DEBUG OVERRIDE — set to pin time-of-day
-for testing (minutes since midnight, e.g. 330 = 5:30am)." and "0 = Sunday
-... 6 = Saturday. Set to null for normal behavior." Both null by default;
-setting either pins `GoodTimes()`'s output for deterministic manual testing
-without touching the real clock or calendar.
+### `GoodTimes.seeded(dotw, mins)`
+Kept a two-line comment in place explaining the split with `invoke()`'s
+ambient statics -- worth the extra line since it's a real gotcha: a caller
+that constructs `GoodTimes` directly should call this, not touch
+`dotwSeed`/`minutesSeed`, which exist only so `invoke()` has something to
+fall back to for callers (`TripViewModel`) that build `GoodTimes()`
+internally with no way to receive a seed as a parameter.
+
+### `GoodTimes.dotwSeed` / `GoodTimes.minutesSeed`
+Formerly `debugOverrideDotw`/`debugOverrideMinutes` -- renamed because
+"override" implied a live, continuously-checked effect, when both are
+actually read once, at `GoodTimes()` construction time; changing either
+afterward does nothing until the next `GoodTimes()` call. "Debug" dropped
+too: this is a testing seam, not a developer-debugging tool. Both null by
+default; setting either before calling bare `GoodTimes()` pins that one
+construction's output.
 
 ### `GoodTimes.scheduleDateFor(epochMillis)`
 Kept a one-line comment in place: "Schedule-day string for an instant, using

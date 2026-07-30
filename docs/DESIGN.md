@@ -80,12 +80,16 @@ still appear on "today's" schedule rather than rolling to tomorrow at midnight.
 | `tomorrowDate` | Next calendar date as `yyyy-MM-dd` |
 | `tomorrowDotw` | `(dotw + 1) % 7` |
 
-### Debug overrides
+### Test seeds
 
-The iOS and PWA implementations include debug overrides for testing
-(`debugOverrideMinutes`, `debugOverrideDotw`). The Kotlin app should do
-the same — they are essential for testing schedule rollover and South County
-edge cases without waiting for the right time of day.
+The iOS and PWA implementations include test seeds for pinning the clock
+(`minutesSeed`, `dotwSeed`). The Kotlin app should do the same — they are
+essential for testing schedule rollover and South County edge cases without
+waiting for the right time of day. Prefer `GoodTimes.seeded(dotw, mins)`
+wherever the caller constructs `GoodTimes` directly; the `dotwSeed`/
+`minutesSeed` statics only exist as a fallback for callers (like
+`TripViewModel`) that construct `GoodTimes()` internally with no seam to
+pass a seed through.
 
 ---
 
@@ -208,11 +212,14 @@ with just enough stations and trains to exercise the logic under test. See
 - Diesel/SC trains run SJD ↔ Gilroy only
 - Builder accepts `.normal`, `.none`, or `.custom` service per schedule type
 
-### Debug overrides for time-sensitive tests
+### Test seeds for time-sensitive tests
 
-Use `GoodTimes.debugOverrideMinutes` and `GoodTimes.debugOverrideDotw` to
-pin the clock and day of week in tests. This makes rollover and South County
-edge cases testable without waiting for specific times.
+Use `GoodTimes.seeded(dotw, mins)` to pin the clock and day of week when a
+test constructs `GoodTimes` directly. For specs driving `TripViewModel`
+(which constructs `GoodTimes()` internally), set the `GoodTimes.dotwSeed`/
+`GoodTimes.minutesSeed` statics instead, and reset them in `afterEach` since
+that path is genuine global state. Either way, this makes rollover and South
+County edge cases testable without waiting for specific times.
 
 ### What to test
 

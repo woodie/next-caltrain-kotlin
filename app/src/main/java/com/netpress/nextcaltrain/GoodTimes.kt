@@ -15,15 +15,21 @@ data class GoodTimes(
     val tomorrowDotw: Int,
 ) {
     companion object {
-        // DEBUG OVERRIDE — set to pin time-of-day for testing (minutes since midnight, e.g. 330 = 5:30am).
-        var debugOverrideMinutes: Int? = null
-
-        // 0 = Sunday ... 6 = Saturday. Set to null for normal behavior.
-        var debugOverrideDotw: Int? = null
+        // Ambient fallback for invoke() (GoodTimes()) -- exists only for callers that
+        // construct GoodTimes() internally and can't take a seed as a parameter (e.g.
+        // TripViewModel). Anything that constructs GoodTimes itself should call
+        // seeded(dotw, mins) directly instead and leave these alone.
+        var dotwSeed: Int? = null
+        var minutesSeed: Int? = null
 
         private val dateFmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
-        operator fun invoke(): GoodTimes {
+        operator fun invoke(): GoodTimes = seeded(dotwSeed, minutesSeed)
+
+        // dotw (0=Sunday...6=Saturday) and/or mins (minutes since midnight) pin the fields
+        // that would otherwise come from the real clock -- resolved directly from the
+        // arguments, so there's nothing global to reset afterward.
+        fun seeded(dotw: Int? = null, mins: Int? = null): GoodTimes {
             val now = Date()
             val run = Date(now.time - 2 * 60 * 60 * 1000L)
 
@@ -34,21 +40,21 @@ data class GoodTimes(
             tomorrow.add(Calendar.DAY_OF_YEAR, 1)
 
             val realDotw = cal.get(Calendar.DAY_OF_WEEK) - 1 // 0=Sunday
-            val dotw = debugOverrideDotw ?: realDotw
-            val tomorrowDotw = (dotw + 1) % 7
+            val resolvedDotw = dotw ?: realDotw
+            val tomorrowDotw = (resolvedDotw + 1) % 7
 
             val date = dateFmt.format(run)
             val tomorrowDate = dateFmt.format(tomorrow.time)
 
-            val minutes = debugOverrideMinutes
+            val resolvedMinutes = mins
                 ?: ((cal.get(Calendar.HOUR_OF_DAY) + 2) * 60 + cal.get(Calendar.MINUTE))
-            val seconds = if (debugOverrideMinutes != null) 0 else cal.get(Calendar.SECOND)
+            val seconds = if (mins != null) 0 else cal.get(Calendar.SECOND)
 
             return GoodTimes(
                 date = date,
-                minutes = minutes,
+                minutes = resolvedMinutes,
                 seconds = seconds,
-                dotw = dotw,
+                dotw = resolvedDotw,
                 tomorrowDate = tomorrowDate,
                 tomorrowDotw = tomorrowDotw,
             )
