@@ -31,14 +31,16 @@ class CaltrainService(private val schedule: Schedule) {
         )
         const val transferStation = "San Jose Diridon"
 
-        fun isSouthCounty(trainId: Int): Boolean = trainId in 801..900
+        fun isSouthCounty(trainId: Int): Boolean = trainId / 100 == 8
 
-        fun trainType(trainId: Int): String = when {
-            trainId > 900 -> "Unknown"
-            trainId > 800 -> "South County"
-            trainId > 500 -> "Express"
-            trainId > 400 -> "Limited"
-            trainId > 100 -> "Local"
+        // Caltrain numbers trains by service: the first digit is the type
+        // (100s weekday Local, 600s weekend Local, ...), the last digit's parity the direction.
+        fun trainType(trainId: Int): String = when (trainId / 100) {
+            1, 6 -> "Local"
+            4 -> "Limited"
+            5 -> "Express"
+            8 -> "South County"
+            9 -> "Special"
             else -> "Unknown"
         }
 

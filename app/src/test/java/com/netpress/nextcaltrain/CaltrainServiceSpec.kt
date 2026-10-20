@@ -13,14 +13,54 @@ class CaltrainServiceSpec : DescribeSpec({
     describe("CaltrainService") {
 
         describe(".isSouthCounty()") {
-            it("returns true for South County trains (801-900)") {
+            it("returns true for South County trains (the 800s)") {
                 CaltrainService.isSouthCounty(801).shouldBeTrue()
                 CaltrainService.isSouthCounty(814).shouldBeTrue()
-                CaltrainService.isSouthCounty(900).shouldBeTrue()
+                CaltrainService.isSouthCounty(899).shouldBeTrue()
             }
             it("returns false for electric trains") {
                 CaltrainService.isSouthCounty(101).shouldBeFalse()
                 CaltrainService.isSouthCounty(514).shouldBeFalse()
+                CaltrainService.isSouthCounty(601).shouldBeFalse()
+            }
+            it("returns false for Special trains (the 900s)") {
+                CaltrainService.isSouthCounty(900).shouldBeFalse()
+                CaltrainService.isSouthCounty(901).shouldBeFalse()
+            }
+        }
+
+        describe(".trainType()") {
+            var trainId = 0
+            lateinit var type: String
+            justBeforeEach { type = CaltrainService.trainType(trainId) }
+
+            context("for a Local train (101)") {
+                beforeEach { trainId = 101 }
+                it("returns Local") { type shouldBe "Local" }
+            }
+            context("for a Limited train (401)") {
+                beforeEach { trainId = 401 }
+                it("returns Limited") { type shouldBe "Limited" }
+            }
+            context("for an Express train (501)") {
+                beforeEach { trainId = 501 }
+                it("returns Express") { type shouldBe "Express" }
+            }
+            context("for a weekend Local train (601)") {
+                beforeEach { trainId = 601 }
+                it("returns Local") { type shouldBe "Local" }
+            }
+            context("for a South County train (801)") {
+                beforeEach { trainId = 801 }
+                it("returns South County") { type shouldBe "South County" }
+            }
+            context("for a Special train (901)") {
+                beforeEach { trainId = 901 }
+                it("returns Special") { type shouldBe "Special" }
+            }
+            context("for a number outside any series (701)") {
+                beforeEach { trainId = 701 }
+                it("returns Unknown") { type shouldBe "Unknown" }
             }
         }
 
