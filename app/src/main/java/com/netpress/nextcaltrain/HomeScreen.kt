@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CompareArrows
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,6 +35,7 @@ fun HomeScreen(
     onNavigateToTripList: (() -> Unit)? = null,
     onNavigateToAbout: (() -> Unit)? = null,
     onNavigateToStationSelection: (() -> Unit)? = null,
+    onNavigateToCalendar: (() -> Unit)? = null,
 ) {
     val trips by vm.trips.collectAsStateWithLifecycle()
     val offset by vm.offset.collectAsStateWithLifecycle()
@@ -171,6 +173,23 @@ fun HomeScreen(
             ) {
                 Icon(Icons.AutoMirrored.Filled.CompareArrows, contentDescription = "Swap", tint = colors.appText)
             }
+        }
+
+        // Calendar button — below swap, where the trip list has it too
+        IconButton(
+            onClick = { onNavigateToCalendar?.invoke() },
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(top = 8.dp + AppStyle.iconButtonSizeDp.dp + 8.dp)
+                .windowInsetsPadding(
+                    WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
+                )
+                .align(Alignment.TopEnd)
+                .size(AppStyle.iconButtonSizeDp.dp)
+                .clip(CircleShape)
+                .background(colors.iconCircleBackground),
+        ) {
+            Icon(Icons.Filled.CalendarMonth, contentDescription = "Create calendar event", tint = colors.appText)
         }
 
         // Ring — decorative only, centered on full screen

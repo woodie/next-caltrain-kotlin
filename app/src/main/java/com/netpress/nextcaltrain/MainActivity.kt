@@ -52,6 +52,7 @@ fun NextCaltrainApp() {
                         onNavigateToTripList = { navController.navigate("tripList") },
                         onNavigateToAbout = { navController.navigate("about") },
                         onNavigateToStationSelection = { navController.navigate("stationSelection") },
+                        onNavigateToCalendar = { navController.navigate("calendar") },
                     )
                 }
                 composable("tripList") {
@@ -60,6 +61,7 @@ fun NextCaltrainApp() {
                         onNavigateBack = { navController.popBackStack() },
                         onNavigateToTripDetail = { navController.navigate("tripDetail") },
                         onNavigateToStationSelection = { navController.navigate("stationSelection") },
+                        onNavigateToCalendar = { navController.navigate("calendar") },
                     )
                 }
                 composable("tripDetail") {
@@ -72,6 +74,13 @@ fun NextCaltrainApp() {
                     StationSelectionScreen(
                         vm = vm,
                         onNavigateBack = { navController.popBackStack() },
+                    )
+                }
+                composable("calendar") {
+                    CalendarScreen(
+                        vm = vm,
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToStationSelection = { navController.navigate("stationSelection") },
                     )
                 }
                 composable("about") {
