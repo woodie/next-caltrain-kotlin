@@ -49,10 +49,7 @@ object CalendarTrip {
     fun title(destination: String): String = "Caltrain to $destination"
 
     // The boarding station, as Maps names it ("Palo Alto Caltrain Station").
-    fun location(station: String): String {
-        val name = if (station == "So San Francisco") "South San Francisco" else station
-        return "$name Caltrain Station"
-    }
+    fun location(station: String): String = "$station Caltrain Station"
 
     // The route, then the trains.
     fun notes(origin: String, destination: String, trains: List<PlannedTrain>): String =

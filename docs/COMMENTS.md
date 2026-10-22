@@ -51,7 +51,8 @@ one arriving at or before it.
 Kept a one-line comment in place. The boarding station, named the way
 Google and Apple Maps know it, so tapping the event's location finds the
 station. Street addresses were dropped: about half the stations have
-none in Google Maps. The feed's "So San Francisco" is spelled out.
+none in Google Maps. The feed's "So San Francisco" is spelled out when the
+schedule loads.
 
 ### `CalendarTrip.notes()`
 Kept a one-line comment in place. The planned train isn't marked: the

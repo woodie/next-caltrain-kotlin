@@ -3,6 +3,7 @@ package com.netpress.nextcaltrain
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -24,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
@@ -74,7 +76,8 @@ fun StationSelectionScreen(vm: TripViewModel, onNavigateBack: () -> Unit) {
                     Text("Cancel", color = colors.appText)
                 }
             },
-            containerColor = colors.appBackground,
+            // A gray panel, so the dialog doesn't vanish into the black background in dark mode.
+            containerColor = if (isSystemInDarkTheme()) Color(0xFF2C2C2E) else Color(0xFFF2F2F2),
         )
     }
 

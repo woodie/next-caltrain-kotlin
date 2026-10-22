@@ -87,6 +87,11 @@ fun AboutScreen(
                 color = colors.appText,
             )
             Text(
+                text = "Version ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+                fontSize = AppStyle.fontOrigin,
+                color = colors.appText,
+            )
+            Text(
                 text = "© 2026 John Woodell",
                 fontSize = AppStyle.fontOrigin,
                 color = colors.appText,

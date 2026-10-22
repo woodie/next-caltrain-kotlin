@@ -118,7 +118,10 @@ data class Schedule(
         private fun fromJson(json: JSONObject): Schedule {
             fun parseStops(key: String): List<String> {
                 val arr = json.getJSONArray(key)
-                return List(arr.length()) { arr.getString(it) }
+                // The feed abbreviates one station name; the app shows it in full.
+                return List(arr.length()) { i ->
+                    arr.getString(i).let { name -> if (name == "So San Francisco") "South San Francisco" else name }
+                }
             }
 
             fun parseTable(key: String): Map<String, List<Int?>> {
