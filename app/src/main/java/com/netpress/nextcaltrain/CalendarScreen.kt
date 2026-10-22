@@ -65,12 +65,10 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-// A schedule day starts at 2:00 AM, so a time before then means late that
-// night (12:05 AM is 1445 minutes), the same rule as GoodTimes.
+// Before 2:00 AM is still the previous schedule day, as in GoodTimes.
 private const val SCHEDULE_DAY_START = 120
 
-// Plan a trip for the calendar, like Google Maps: Leave at / Arrive by, a
-// date and a time, then the phone's own calendar app, filled in. Mirrors iOS CalendarView.swift.
+// The calendar planner: when to travel, then the event to add. Mirrors iOS CalendarView.swift.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(vm: TripViewModel, onNavigateBack: () -> Unit, onNavigateToStationSelection: () -> Unit) {
@@ -171,8 +169,7 @@ fun CalendarScreen(vm: TripViewModel, onNavigateBack: () -> Unit, onNavigateToSt
         ) {
             Pill("$origin to $destination", onClick = onNavigateToStationSelection)
 
-            // One line: (Leave at) (Oct 21, 2026) (4:20 PM), date then time like
-            // the calendar's own start row, or (10/21/26) when that doesn't fit.
+            // Falls back to a numeric date (10/21/26) when the row doesn't fit.
             @Composable
             fun whenRow(dateFormat: String) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -221,7 +218,6 @@ fun CalendarScreen(vm: TripViewModel, onNavigateBack: () -> Unit, onNavigateToSt
                 if (trains.isEmpty()) {
                     EventSection(dark) { Text("No train fits that time.", color = colors.appText) }
                 } else {
-                    // Title and location share a group, as on a calendar's new-event screen.
                     EventSection(dark) {
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Text(CalendarTrip.title(destination), color = colors.appText, fontSize = 17.sp)
@@ -326,9 +322,7 @@ private fun initialTime(vm: TripViewModel): LocalTime {
     return LocalTime.of(minutes / 60, minutes % 60)
 }
 
-// The next date (today first, or tomorrow for tomorrow's trips) whose
-// schedule matches the one on screen, so viewing Weekend on a Tuesday plans
-// a Saturday.
+// The next date whose schedule matches the one on screen.
 private fun initialDate(vm: TripViewModel): LocalDate {
     val trip = vm.trips.value.getOrNull(vm.offset.value)
     val isFuture = trip?.isFuture ?: false

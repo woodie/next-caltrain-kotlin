@@ -17,15 +17,12 @@ data class PlannedTrain(
     val selected: Boolean,
 )
 
-// Planning a trip for the calendar: the planned train plus the trains before
-// and after it, and the event. Mirrors iOS CalendarTrip.swift.
+// The calendar planner's logic. Mirrors iOS CalendarTrip.swift.
 object CalendarTrip {
     // Caltrain runs on Pacific time, whatever the phone's own time zone is.
     val zone: ZoneId = ZoneId.of("America/Los_Angeles")
 
-    // The planned train's index in trips (sorted by departure): the first
-    // departing at or after minutes (leave), or the last arriving at or
-    // before it (arrive); null if no train fits.
+    // Index of the planned train in trips, or null if none fits.
     fun find(trips: List<Trip>, mode: PlanMode, minutes: Int): Int? {
         val index = when (mode) {
             PlanMode.LEAVE -> trips.indexOfFirst { it.depart >= minutes }
@@ -51,21 +48,17 @@ object CalendarTrip {
 
     fun title(destination: String): String = "Caltrain to $destination"
 
-    // The event location: the boarding station, named the way Google and
-    // Apple Maps know it ("Palo Alto Caltrain Station"), so tapping it in the
-    // calendar finds the station. The feed abbreviates one name.
+    // The boarding station, as Maps names it ("Palo Alto Caltrain Station").
     fun location(station: String): String {
         val name = if (station == "So San Francisco") "South San Francisco" else station
         return "$name Caltrain Station"
     }
 
-    // The event notes: the route, then the trains. The event's own times
-    // already say which one is planned, so the notes don't mark it.
+    // The route, then the trains.
     fun notes(origin: String, destination: String, trains: List<PlannedTrain>): String =
         (listOf("$origin to $destination") + trains.map(::line)).joinToString("\n")
 
-    // Minutes past midnight on an ISO date (YYYY-MM-DD), on Pacific time;
-    // times past midnight (> 1440) roll over to the next day.
+    // Minutes past midnight on an ISO date (YYYY-MM-DD), on Pacific time.
     fun date(isoDate: String, minutes: Int): ZonedDateTime = LocalDate.parse(isoDate)
         .plusDays((minutes / 1440).toLong())
         .atTime(minutes % 1440 / 60, minutes % 60)
