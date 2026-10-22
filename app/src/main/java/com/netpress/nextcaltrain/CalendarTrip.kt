@@ -51,6 +51,14 @@ object CalendarTrip {
 
     fun title(destination: String): String = "Caltrain to $destination"
 
+    // The event location: the boarding station, named the way Google and
+    // Apple Maps know it ("Palo Alto Caltrain Station"), so tapping it in the
+    // calendar finds the station. The feed abbreviates one name.
+    fun location(station: String): String {
+        val name = if (station == "So San Francisco") "South San Francisco" else station
+        return "$name Caltrain Station"
+    }
+
     // The event notes: the route, then the trains. The event's own times
     // already say which one is planned, so the notes don't mark it.
     fun notes(origin: String, destination: String, trains: List<PlannedTrain>): String =

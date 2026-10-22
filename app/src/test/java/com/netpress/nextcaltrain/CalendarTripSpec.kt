@@ -71,6 +71,16 @@ class CalendarTripSpec : DescribeSpec({
             }
         }
 
+        describe(".location()") {
+            it("names the station") {
+                CalendarTrip.location("Palo Alto") shouldBe "Palo Alto Caltrain Station"
+            }
+
+            it("spells out South San Francisco") {
+                CalendarTrip.location("So San Francisco") shouldBe "South San Francisco Caltrain Station"
+            }
+        }
+
         describe(".date()") {
             it("is that time on Pacific time") {
                 pacific(CalendarTrip.date("2026-05-21", 17 * 60 + 55)) shouldBe "2026-05-21 17:55"

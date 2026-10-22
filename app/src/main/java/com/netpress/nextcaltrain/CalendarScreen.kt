@@ -33,6 +33,7 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -100,6 +101,7 @@ fun CalendarScreen(vm: TripViewModel, onNavigateBack: () -> Unit, onNavigateToSt
         val intent = Intent(Intent.ACTION_INSERT)
             .setData(CalendarContract.Events.CONTENT_URI)
             .putExtra(CalendarContract.Events.TITLE, CalendarTrip.title(destination))
+            .putExtra(CalendarContract.Events.EVENT_LOCATION, CalendarTrip.location(origin))
             .putExtra(CalendarContract.Events.DESCRIPTION, CalendarTrip.notes(origin, destination, trains))
             .putExtra(CalendarContract.Events.EVENT_TIMEZONE, CalendarTrip.zone.id)
             .putExtra(
@@ -219,8 +221,13 @@ fun CalendarScreen(vm: TripViewModel, onNavigateBack: () -> Unit, onNavigateToSt
                 if (trains.isEmpty()) {
                     EventSection(dark) { Text("No train fits that time.", color = colors.appText) }
                 } else {
+                    // Title and location share a group, as on a calendar's new-event screen.
                     EventSection(dark) {
-                        Text(CalendarTrip.title(destination), color = colors.appText, fontSize = 17.sp)
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Text(CalendarTrip.title(destination), color = colors.appText, fontSize = 17.sp)
+                            HorizontalDivider()
+                            Text(CalendarTrip.location(origin), color = colors.appText, fontSize = 17.sp)
+                        }
                     }
                     EventSection(dark) {
                         Text(CalendarTrip.notes(origin, destination, trains), color = colors.appText, fontSize = 17.sp)
