@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.CompareArrows
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +39,7 @@ fun TripListScreen(
     onNavigateBack: () -> Unit,
     onNavigateToTripDetail: () -> Unit,
     onNavigateToStationSelection: () -> Unit,
+    onNavigateToCalendar: () -> Unit,
 ) {
     val trips by vm.trips.collectAsStateWithLifecycle()
     val offset by vm.offset.collectAsStateWithLifecycle()
@@ -213,8 +215,20 @@ fun TripListScreen(
                         )
                     }
                     Spacer(modifier = Modifier.weight(1f))
-                    // Balance the back button
-                    Spacer(modifier = Modifier.size(AppStyle.iconButtonSizeDp.dp))
+                    // Below swap, mirroring the back button; the same spot as on Home.
+                    IconButton(
+                        onClick = onNavigateToCalendar,
+                        modifier = Modifier
+                            .size(AppStyle.iconButtonSizeDp.dp)
+                            .clip(CircleShape)
+                            .background(colors.iconCircleBackground),
+                    ) {
+                        Icon(
+                            Icons.Filled.CalendarMonth,
+                            contentDescription = "Create calendar event",
+                            tint = colors.appText,
+                        )
+                    }
                 }
 
                 // Status blurb — tappable to cycle schedule
