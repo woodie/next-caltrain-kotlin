@@ -9,6 +9,59 @@ code location kept its own one-line comment, it's noted below so this stays
 a complete map of "why," not a duplicate of what's already readable in the
 file.
 
+## app/src/main/java/com/netpress/nextcaltrain/CalendarScreen.kt
+
+### `CalendarScreen`
+Kept a one-line comment in place. Same layout as iOS's CalendarView: the
+stations as a pill, (Leave at) (date) (time) on one line, then the event
+as it will be added (title and location, then notes) in rounded groups
+like a calendar's new-event screen. The green check matches the station
+screen's Save. Adding the event uses CalendarContract's insert intent,
+which hands it to the phone's calendar app and needs no permission.
+
+### `SCHEDULE_DAY_START`
+Kept a one-line comment in place. A time before 2:00 AM means late that
+night, so 12:05 AM becomes 1445 minutes, the same rule as `GoodTimes`.
+
+### The `FitsOrFallback` row
+Kept a one-line comment in place. (Leave at) (Oct 21, 2026) (4:20 PM) on
+one line, date then time like a calendar's start row; when that's too
+wide, the date shows as 10/21/26 instead. `FitsOrFallback` is a small
+`SubcomposeLayout` doing what SwiftUI's `ViewThatFits` does on iOS.
+
+### `initialDate(vm)`
+Kept a one-line comment in place. Today first, or tomorrow for tomorrow's
+trips, then forward up to two weeks, so viewing Weekend on a Tuesday
+plans a Saturday.
+
+## app/src/main/java/com/netpress/nextcaltrain/CalendarTrip.kt
+
+### `CalendarTrip`
+Kept a one-line comment in place. The planned train plus the trains
+before and after it, and the event made from them, as in iOS's
+CalendarTrip.swift; CalendarTripSpec has the same spec text apart from
+method names.
+
+### `CalendarTrip.find()`
+Kept a one-line comment in place. `trips` is sorted by departure: leave
+picks the first train departing at or after `minutes`, arrive the last
+one arriving at or before it.
+
+### `CalendarTrip.location()`
+Kept a one-line comment in place. The boarding station, named the way
+Google and Apple Maps know it, so tapping the event's location finds the
+station. Street addresses were dropped: about half the stations have
+none in Google Maps. The feed's "So San Francisco" is spelled out.
+
+### `CalendarTrip.notes()`
+Kept a one-line comment in place. The planned train isn't marked: the
+event's own start and end already say which train it is.
+
+### `CalendarTrip.date()`
+Kept a one-line comment in place. Times past midnight (> 1440 minutes)
+roll over to the next day, built in Pacific time whatever the phone's
+own zone is.
+
 ## app/src/main/java/com/netpress/nextcaltrain/GoodTimes.kt
 
 ### `GoodTimes` (class)
