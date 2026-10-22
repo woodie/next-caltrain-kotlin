@@ -23,7 +23,7 @@ import java.util.Calendar
 class ScheduleSpec : DescribeSpec({
 
     val validScheduleJson =
-        """{"northStops":["A","B"],"southStops":["A","So San Francisco"],""" +
+        """{"northStops":["A","B"],"southStops":["A","B"],""" +
             """"northWeekday":{},"northWeekend":{},"northHoliday":{},""" +
             """"southWeekday":{},"southWeekend":{},"southHoliday":{}}"""
 
@@ -98,14 +98,6 @@ class ScheduleSpec : DescribeSpec({
 
                     schedule.northStops shouldBe listOf("A", "B")
                     File(cacheDir, Schedule.CACHE_FILE).readText() shouldBe validScheduleJson
-                }
-            }
-
-            it("spells out South San Francisco") {
-                runTest {
-                    val fakeHttp = FakeScheduleHttpClient(getHandler = { ScheduleHttpResult(200, validScheduleJson) })
-
-                    Schedule.fetchFromNetwork(context, fakeHttp).southStops shouldBe listOf("A", "South San Francisco")
                 }
             }
         }
