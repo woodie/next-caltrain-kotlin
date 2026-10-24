@@ -22,7 +22,7 @@ three platforms. The Kotlin app is the fourth implementation.
 Schedule data is published as `schedule.json` at:
 
 ```
-https://next-caltrain-pwa.appspot.com/feed/schedule.json
+https://next-caltrain-app.appspot.com/feed/schedule.json
 ```
 
 This file is shared by all clients (PWA, iOS, Android). It is generated from
