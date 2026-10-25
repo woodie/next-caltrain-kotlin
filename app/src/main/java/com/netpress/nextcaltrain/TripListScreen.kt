@@ -231,12 +231,11 @@ fun TripListScreen(
                     }
                 }
 
-                // Status blurb — tappable to cycle schedule
+                // Status blurb — tappable to cycle schedule; only the words, so a low tap on Back or Calendar can't cycle it.
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(rowHeightDp)
-                        .pointerInput(Unit) { detectTapGestures { vm.cycleSchedule() } },
+                        .height(rowHeightDp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -244,9 +243,9 @@ fun TripListScreen(
                         fontSize = AppStyle.fontBlurb,
                         color = statusColor,
                         softWrap = false,
-                        modifier = Modifier.alpha(
-                            if ((isSelectedDeparting || noTrains) && !blinkOn) 0f else 1f,
-                        ),
+                        modifier = Modifier
+                            .pointerInput(Unit) { detectTapGestures { vm.cycleSchedule() } }
+                            .alpha(if ((isSelectedDeparting || noTrains) && !blinkOn) 0f else 1f),
                     )
                 }
             }
