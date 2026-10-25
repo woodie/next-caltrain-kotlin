@@ -17,7 +17,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.netpress.nextcaltrain.ui.CircleButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
@@ -96,7 +96,7 @@ fun StationSelectionScreen(vm: TripViewModel, onNavigateBack: () -> Unit) {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(
+            CircleButton(
                 onClick = onNavigateBack,
                 modifier = Modifier
                     .size(AppStyle.iconButtonSizeDp.dp)
@@ -114,7 +114,7 @@ fun StationSelectionScreen(vm: TripViewModel, onNavigateBack: () -> Unit) {
                         .clip(RoundedCornerShape(AppStyle.iconButtonSizeDp.dp / 2))
                         .background(colors.iconCircleBackground),
                 ) {
-                    IconButton(
+                    CircleButton(
                         onClick = { vm.restoreDefaultStops() },
                         modifier = Modifier.size(AppStyle.iconButtonSizeDp.dp),
                     ) {
@@ -126,7 +126,7 @@ fun StationSelectionScreen(vm: TripViewModel, onNavigateBack: () -> Unit) {
                             modifier = Modifier.scale(scaleX = -1f, scaleY = 1f),
                         )
                     }
-                    IconButton(
+                    CircleButton(
                         onClick = { showSaveConfirm = true },
                         modifier = Modifier.size(AppStyle.iconButtonSizeDp.dp),
                     ) {

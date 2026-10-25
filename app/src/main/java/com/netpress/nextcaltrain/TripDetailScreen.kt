@@ -9,7 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.netpress.nextcaltrain.ui.CircleButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -99,7 +99,7 @@ fun TripDetailScreen(vm: TripViewModel, onNavigateBack: () -> Unit) {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(
+            CircleButton(
                 onClick = onNavigateBack,
                 modifier = Modifier
                     .size(AppStyle.iconButtonSizeDp.dp)

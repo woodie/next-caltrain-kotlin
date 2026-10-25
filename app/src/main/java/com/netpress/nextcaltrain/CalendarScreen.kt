@@ -35,7 +35,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.netpress.nextcaltrain.ui.CircleButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -131,7 +131,7 @@ fun CalendarScreen(vm: TripViewModel, onNavigateBack: () -> Unit, onNavigateToSt
                 .padding(top = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(
+            CircleButton(
                 onClick = onNavigateBack,
                 modifier = Modifier
                     .size(AppStyle.iconButtonSizeDp.dp)
@@ -147,7 +147,7 @@ fun CalendarScreen(vm: TripViewModel, onNavigateBack: () -> Unit, onNavigateToSt
             if (trains.isEmpty()) {
                 Spacer(modifier = Modifier.size(AppStyle.iconButtonSizeDp.dp))
             } else {
-                IconButton(
+                CircleButton(
                     onClick = { addToCalendar() },
                     modifier = Modifier
                         .size(AppStyle.iconButtonSizeDp.dp)

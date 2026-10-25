@@ -14,7 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.netpress.nextcaltrain.ui.CircleButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -144,7 +144,7 @@ fun TripListScreen(
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     if (vm.hasManualSelection) {
-                        IconButton(
+                        CircleButton(
                             onClick = { vm.resetToNext() },
                             modifier = Modifier
                                 .size(AppStyle.iconButtonSizeDp.dp)
@@ -161,7 +161,7 @@ fun TripListScreen(
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                     }
-                    IconButton(
+                    CircleButton(
                         onClick = { vm.swapStations() },
                         modifier = Modifier
                             .size(AppStyle.iconButtonSizeDp.dp)
@@ -183,7 +183,7 @@ fun TripListScreen(
                         .padding(horizontal = 16.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    IconButton(
+                    CircleButton(
                         onClick = onNavigateBack,
                         modifier = Modifier
                             .size(AppStyle.iconButtonSizeDp.dp)
@@ -216,7 +216,7 @@ fun TripListScreen(
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     // Below swap, mirroring the back button; the same spot as on Home.
-                    IconButton(
+                    CircleButton(
                         onClick = onNavigateToCalendar,
                         modifier = Modifier
                             .size(AppStyle.iconButtonSizeDp.dp)
