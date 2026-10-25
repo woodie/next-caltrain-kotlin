@@ -169,12 +169,12 @@ fun CalendarScreen(vm: TripViewModel, onNavigateBack: () -> Unit, onNavigateToSt
         ) {
             Pill("$origin to $destination", onClick = onNavigateToStationSelection)
 
-            // Falls back to a numeric date (10/21/26) when the row doesn't fit.
+            // The mode menu; only the layout on screen carries its dropdown.
             @Composable
-            fun whenRow(dateFormat: String) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Box {
-                        Pill(mode.label, trailing = Icons.Filled.UnfoldMore, onClick = { showModeMenu = true })
+            fun modePill(withMenu: Boolean) {
+                Box {
+                    Pill(mode.label, trailing = Icons.Filled.UnfoldMore, onClick = { showModeMenu = true })
+                    if (withMenu) {
                         DropdownMenu(expanded = showModeMenu, onDismissRequest = { showModeMenu = false }) {
                             PlanMode.entries.forEach { option ->
                                 DropdownMenuItem(
@@ -190,19 +190,38 @@ fun CalendarScreen(vm: TripViewModel, onNavigateBack: () -> Unit, onNavigateToSt
                             }
                         }
                     }
-                    Pill(date.format(DateTimeFormatter.ofPattern(dateFormat, Locale.US)), onClick = {
-                        showDatePicker =
-                            true
-                    })
-                    Pill(time.format(DateTimeFormatter.ofPattern("h:mm a", Locale.US)), onClick = {
-                        showTimePicker =
-                            true
-                    })
                 }
             }
-            FitsOrFallback(
-                full = { whenRow("MMM d, yyyy") },
-                compact = { whenRow("M/d/yy") },
+
+            @Composable
+            fun dateTimePills(dateFormat: String) {
+                Pill(date.format(DateTimeFormatter.ofPattern(dateFormat, Locale.US)), onClick = { showDatePicker = true })
+                Pill(time.format(DateTimeFormatter.ofPattern("h:mm a", Locale.US)), onClick = { showTimePicker = true })
+            }
+
+            // One row with the full date, then with a numeric date (10/21/26), then two lines.
+            FirstThatFits(
+                { withMenu ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        modePill(withMenu)
+                        dateTimePills("MMM d, yyyy")
+                    }
+                },
+                { withMenu ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        modePill(withMenu)
+                        dateTimePills("M/d/yy")
+                    }
+                },
+                { withMenu ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        modePill(withMenu)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { dateTimePills("M/d/yy") }
+                    }
+                },
             )
 
             // The event as it lands in the calendar: the title, then the notes.
@@ -299,16 +318,15 @@ private fun EventSection(dark: Boolean, content: @Composable () -> Unit) {
     ) { content() }
 }
 
-// Shows full if it fits the width on offer, otherwise compact, like SwiftUI's ViewThatFits.
+// Shows the first layout that fits the width, or the last one; measured without menus, shown with.
 @Composable
-private fun FitsOrFallback(full: @Composable () -> Unit, compact: @Composable () -> Unit) {
+private fun FirstThatFits(vararg layouts: @Composable (withMenu: Boolean) -> Unit) {
     SubcomposeLayout { constraints ->
-        val wide = subcompose("full", full).map { it.measure(Constraints()) }
-        val placeables = if ((wide.maxOfOrNull { it.width } ?: 0) <= constraints.maxWidth) {
-            wide
-        } else {
-            subcompose("compact", compact).map { it.measure(constraints.copy(minWidth = 0)) }
-        }
+        val chosen = layouts.indices.firstOrNull { i ->
+            val widths = subcompose("measure$i") { layouts[i](false) }.map { it.measure(Constraints()).width }
+            (widths.maxOrNull() ?: 0) <= constraints.maxWidth
+        } ?: layouts.lastIndex
+        val placeables = subcompose("show") { layouts[chosen](true) }.map { it.measure(constraints.copy(minWidth = 0)) }
         layout(placeables.maxOfOrNull { it.width } ?: 0, placeables.maxOfOrNull { it.height } ?: 0) {
             placeables.forEach { it.place(0, 0) }
         }
