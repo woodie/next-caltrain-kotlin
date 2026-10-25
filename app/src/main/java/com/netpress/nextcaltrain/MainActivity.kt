@@ -6,8 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -23,6 +25,11 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+// Ignores taps while a screen change animates, which would stack a second copy of a screen.
+private fun NavBackStackEntry.ifResumed(action: () -> Unit): () -> Unit = {
+    if (lifecycle.currentState == Lifecycle.State.RESUMED) action()
 }
 
 @Composable
@@ -46,49 +53,49 @@ fun NextCaltrainApp() {
             val navController = rememberNavController()
 
             NavHost(navController = navController, startDestination = "home") {
-                composable("home") {
+                composable("home") { entry ->
                     HomeScreen(
                         vm = vm,
-                        onNavigateToTripList = { navController.navigate("tripList") },
-                        onNavigateToAbout = { navController.navigate("about") },
-                        onNavigateToStationSelection = { navController.navigate("stationSelection") },
-                        onNavigateToCalendar = { navController.navigate("calendar") },
+                        onNavigateToTripList = entry.ifResumed { navController.navigate("tripList") },
+                        onNavigateToAbout = entry.ifResumed { navController.navigate("about") },
+                        onNavigateToStationSelection = entry.ifResumed { navController.navigate("stationSelection") },
+                        onNavigateToCalendar = entry.ifResumed { navController.navigate("calendar") },
                     )
                 }
-                composable("tripList") {
+                composable("tripList") { entry ->
                     TripListScreen(
                         vm = vm,
-                        onNavigateBack = { navController.popBackStack() },
-                        onNavigateToTripDetail = { navController.navigate("tripDetail") },
-                        onNavigateToStationSelection = { navController.navigate("stationSelection") },
-                        onNavigateToCalendar = { navController.navigate("calendar") },
+                        onNavigateBack = entry.ifResumed { navController.popBackStack() },
+                        onNavigateToTripDetail = entry.ifResumed { navController.navigate("tripDetail") },
+                        onNavigateToStationSelection = entry.ifResumed { navController.navigate("stationSelection") },
+                        onNavigateToCalendar = entry.ifResumed { navController.navigate("calendar") },
                     )
                 }
-                composable("tripDetail") {
+                composable("tripDetail") { entry ->
                     TripDetailScreen(
                         vm = vm,
-                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateBack = entry.ifResumed { navController.popBackStack() },
                     )
                 }
-                composable("stationSelection") {
+                composable("stationSelection") { entry ->
                     StationSelectionScreen(
                         vm = vm,
-                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateBack = entry.ifResumed { navController.popBackStack() },
                     )
                 }
-                composable("calendar") {
+                composable("calendar") { entry ->
                     CalendarScreen(
                         vm = vm,
-                        onNavigateBack = { navController.popBackStack() },
-                        onNavigateToStationSelection = { navController.navigate("stationSelection") },
+                        onNavigateBack = entry.ifResumed { navController.popBackStack() },
+                        onNavigateToStationSelection = entry.ifResumed { navController.navigate("stationSelection") },
                     )
                 }
-                composable("about") {
+                composable("about") { entry ->
                     AboutScreen(
                         scheduleDate = state.schedule.scheduleDate,
                         isLoading = false,
                         loadFailed = false,
-                        onBack = { navController.popBackStack() },
+                        onBack = entry.ifResumed { navController.popBackStack() },
                     )
                 }
             }
