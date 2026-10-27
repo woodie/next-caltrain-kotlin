@@ -9,7 +9,7 @@ val CalPastLight = Color(0xFF0000FF) // #00F
 val CalPastDark = Color(0xFF338CFF) // #338CFF
 
 // Green — arriving trains
-val CalArriveLight = Color(0xFF009E66) // #009e0b approx
+val CalArriveLight = Color(0xFF009E66) // #009E66
 val CalArriveDark = Color(0xFF00FF00) // #0F0
 
 // Yellow — departing trains
