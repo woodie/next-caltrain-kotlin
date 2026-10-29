@@ -176,10 +176,11 @@ fun TripListScreen(
                     }
                 }
 
-                // Row 2: back button + station names (centered) + spacer
+                // Row 2: back button + station names (centered) + spacer; side insets keep Calendar off the landscape nav bar.
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
                         .padding(horizontal = 16.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
