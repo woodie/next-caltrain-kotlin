@@ -87,6 +87,63 @@ docs](https://kotest.io/docs/5.9.x/framework/conditional/conditional-tests-with-
 (version-matched to this project's pinned `kotest = "5.9.1"`) for the full
 mechanism.
 
+### Test output formatting
+
+`app/build.gradle.kts` used to register its own custom Gradle `TestListener`
+directly (replacing `gradle-test-logger-plugin`), byte-for-byte copied into
+humane-kotlin/huck too. That block is now `kotidy` (see
+`~/workspace/kotidy`'s own `docs/COWORK.md`) -- one real plugin instead of
+three hand-synced copies. Originally consumed as a composite build
+(`pluginManagement { includeBuild("../kotidy") }`); now that
+`com.netpress.kotidy` is approved and live on the Gradle Plugin Portal,
+`settings.gradle.kts` just has `gradlePluginPortal()` in
+`pluginManagement.repositories` like any other plugin, and `app/build.gradle.kts`
+pins `id("com.netpress.kotidy") version "0.1.0"` + `kotidy { style = "fs" }`
+-- no sibling checkout of `kotidy` needed on disk or in CI anymore. Still prints a real nested describe/context/it
+tree straight from `TestDescriptor.parent`, still only blank-lines before
+each top-level suite, still respects `NO_COLOR=1`. `style = "fs"` is the
+closest match to the old look (green ✔ + dimmed name on pass) but isn't
+byte-identical -- the old ad hoc block's fail/skip glyphs (solid red ✖, solid
+cyan ○, no `(FAILED - N)`/`(SKIPPED)` suffix) never actually matched a real
+named convention; `fs` now renders Mocha's real spec format instead (red
+`✗ name (FAILED - N)`, cyan `- name (SKIPPED)`) -- see kotidy's README for
+the full style table if a different look is ever wanted.
+
+There's now a real "Test Succeeded"/"Test Failed" + counts summary line at
+the end again, via `kotidy`'s shared `standardFooter`. There used to be one
+here too, before it was dropped: it relied on a `val runStart =
+System.currentTimeMillis()` set at Gradle *configuration* time, which went
+stale (sometimes by hours) whenever `org.gradle.configuration-cache=true`
+reused a cached configuration instead of re-running it, producing nonsense
+elapsed times like `72 passing (113516.7s)`. `kotidy`'s footer doesn't have
+the same bug: every count and duration it prints is reset in `doFirst`
+(actual task-execution time, re-run on every invocation regardless of
+config-cache state -- the same fix already applied to `lastPath`'s own
+dedupe state) and each test's elapsed time comes from `TestResult`'s real
+per-test `startTime`/`endTime`, never a value captured once at configuration
+time. `BUILD SUCCESSFUL`/`BUILD FAILED` still follows right after, unchanged.
+
+That footer still includes a `Configuration cache entry stored/reused.`
+line. `test.sh` deliberately does NOT pipe `./gradlew clean test` through
+`grep`/`sed` to filter it out: piping makes Gradle's stdout a non-tty, which
+drops it out of rich console mode and into plain mode, printing a
+`> Task :app:xxx` line for every one of the ~27 tasks instead of collapsing
+the silent ones — far noisier than the one line it would remove. Gradle also
+has no dedicated flag to silence just that notice without affecting
+`BUILD SUCCESSFUL`/`actionable tasks` too (open issue:
+[gradle/gradle#24435](https://github.com/gradle/gradle/issues/24435)), so it
+stays.
+
+A blank line is also printed before every top-level suite line (the
+`com.netpress.nextcaltrain.*` class name), unconditionally — including the
+very first one in the run — so each suite's block visually stands apart from
+whatever preceded it.
+
+The Swift sibling (`next-caltrain-swift`) does the same dedupe-and-render
+trick, plus the same unconditional blank-line-before-suite rule, from the
+opposite starting point — see its `docs/COWORK.md` "Test output formatting"
+section.
+
 ## Linting
 
 ```

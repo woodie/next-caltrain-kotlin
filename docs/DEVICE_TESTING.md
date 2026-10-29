@@ -104,6 +104,17 @@ If you want to inspect the UI live on device:
 - Try a different USB port on your Mac.
 - Run `adb kill-server && adb start-server` then reconnect.
 
+**"More than one device/emulator attached"**
+- `sim.sh` needs exactly one device. Unplug the other one (e.g. a KaiOS flip phone), or
+  target this phone by the serial from `adb devices`:
+  ```bash
+  ANDROID_SERIAL=<serial> ./gradlew installDebug
+  ANDROID_SERIAL=<serial> ~/Library/Android/sdk/platform-tools/adb shell am start -n com.netpress.nextcaltrain/.MainActivity
+  ```
+
+**Screenshot comes back black**
+- The phone's screen is off or locked. Unlock it and launch again.
+
 **App installs but immediately crashes**
 - Run `./sim.sh run --log` to see the stack trace, or check with the `adb logcat` command above.
 

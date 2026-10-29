@@ -100,7 +100,8 @@ UI architecture decisions. Outstanding work is UI polish, not missing features.
   coverage — it calls `Schedule.loadCached(context)`/`fetchFromNetwork(context)` directly
   with no DI seam, so unit-testing it would need either Robolectric/instrumented tests or a
   small refactor to inject those calls.
-- Dark mode verification, real device testing pass
+- Dark mode verification
+- Physical devices so far are both Android 9 (Galaxy S8, Pixel XL); nothing newer yet
 
 ## Key files
 
@@ -134,62 +135,8 @@ entirely. See `docs/DEVELOPMENT.md` "Running a single spec" for
 fully-qualified names, wildcards, and the `kotest_filter_tests` variant
 (filters by individual `it` name).
 
-### Test output formatting
-
-`app/build.gradle.kts` used to register its own custom Gradle `TestListener`
-directly (replacing `gradle-test-logger-plugin`), byte-for-byte copied into
-humane-kotlin/huck too. That block is now `kotidy` (see
-`~/workspace/kotidy`'s own `docs/COWORK.md`) -- one real plugin instead of
-three hand-synced copies. Originally consumed as a composite build
-(`pluginManagement { includeBuild("../kotidy") }`); now that
-`com.netpress.kotidy` is approved and live on the Gradle Plugin Portal,
-`settings.gradle.kts` just has `gradlePluginPortal()` in
-`pluginManagement.repositories` like any other plugin, and `app/build.gradle.kts`
-pins `id("com.netpress.kotidy") version "0.1.0"` + `kotidy { style = "fs" }`
--- no sibling checkout of `kotidy` needed on disk or in CI anymore. Still prints a real nested describe/context/it
-tree straight from `TestDescriptor.parent`, still only blank-lines before
-each top-level suite, still respects `NO_COLOR=1`. `style = "fs"` is the
-closest match to the old look (green ✔ + dimmed name on pass) but isn't
-byte-identical -- the old ad hoc block's fail/skip glyphs (solid red ✖, solid
-cyan ○, no `(FAILED - N)`/`(SKIPPED)` suffix) never actually matched a real
-named convention; `fs` now renders Mocha's real spec format instead (red
-`✗ name (FAILED - N)`, cyan `- name (SKIPPED)`) -- see kotidy's README for
-the full style table if a different look is ever wanted.
-
-There's now a real "Test Succeeded"/"Test Failed" + counts summary line at
-the end again, via `kotidy`'s shared `standardFooter`. There used to be one
-here too, before it was dropped: it relied on a `val runStart =
-System.currentTimeMillis()` set at Gradle *configuration* time, which went
-stale (sometimes by hours) whenever `org.gradle.configuration-cache=true`
-reused a cached configuration instead of re-running it, producing nonsense
-elapsed times like `72 passing (113516.7s)`. `kotidy`'s footer doesn't have
-the same bug: every count and duration it prints is reset in `doFirst`
-(actual task-execution time, re-run on every invocation regardless of
-config-cache state -- the same fix already applied to `lastPath`'s own
-dedupe state) and each test's elapsed time comes from `TestResult`'s real
-per-test `startTime`/`endTime`, never a value captured once at configuration
-time. `BUILD SUCCESSFUL`/`BUILD FAILED` still follows right after, unchanged.
-
-That footer still includes a `Configuration cache entry stored/reused.`
-line. `test.sh` deliberately does NOT pipe `./gradlew clean test` through
-`grep`/`sed` to filter it out: piping makes Gradle's stdout a non-tty, which
-drops it out of rich console mode and into plain mode, printing a
-`> Task :app:xxx` line for every one of the ~27 tasks instead of collapsing
-the silent ones — far noisier than the one line it would remove. Gradle also
-has no dedicated flag to silence just that notice without affecting
-`BUILD SUCCESSFUL`/`actionable tasks` too (open issue:
-[gradle/gradle#24435](https://github.com/gradle/gradle/issues/24435)), so it
-stays.
-
-A blank line is also printed before every top-level suite line (the
-`com.netpress.nextcaltrain.*` class name), unconditionally — including the
-very first one in the run — so each suite's block visually stands apart from
-whatever preceded it.
-
-The Swift sibling (`next-caltrain-swift`) does the same dedupe-and-render
-trick, plus the same unconditional blank-line-before-suite rule, from the
-opposite starting point — see its `docs/COWORK.md` "Test output formatting"
-section.
+Test output comes from the `kotidy` Gradle plugin; see `docs/DEVELOPMENT.md`
+"Test output formatting" for how it looks and why.
 
 ## Testing approach
 
@@ -253,16 +200,14 @@ now instead of `HttpURLConnection`), `FakeScheduleHttpClient` (tests),
 three outcomes (200+valid, non-2xx, 200+invalid) the same inline-`shouldThrow`
 way as huck -- not `justBeforeEach`.
 
-## Install and run on emulator
+## Install and run on emulator or phone
 ```bash
-./gradlew installDebug && ~/Library/Android/sdk/platform-tools/adb shell am start -n com.netpress.nextcaltrain/.MainActivity
+./build.sh && ./sim.sh run
 ```
 
-## Launch with clear cache (to see loading screen)
-```bash
-~/Library/Android/sdk/platform-tools/adb shell pm clear com.netpress.nextcaltrain
-~/Library/Android/sdk/platform-tools/adb shell am start -n com.netpress.nextcaltrain/.MainActivity
-```
+Add `--fresh` to clear app data first (shows the loading screen). Phone setup is in
+`docs/DEVICE_TESTING.md`. `sim.sh` needs exactly one device attached; with more than one,
+target a phone by serial with `ANDROID_SERIAL=<serial> ./gradlew installDebug`.
 
 ## Check crash logs
 ```bash
@@ -310,21 +255,6 @@ bugfix/12-remove-unused-rowwidthkey
 ```
 
 Pattern: `{type}/{issue-number}-{short-description}`
-
-### Stale-looking git lock errors
-
-If `git add`/`git commit` fails with `Unable to create '.git/index.lock'`
-(or `HEAD.lock`) `: File exists`, it's almost never a real stale lock from a
-crashed git process — `ps aux` will show nothing running, and `rm -f` on the
-lock file fails with `Operation not permitted` even though ownership and
-permissions look completely normal. This repo's working copy is a folder
-mounted into Cowork's sandbox from the user's actual machine, and deleting
-files there requires explicit one-time permission per session. Call the
-`allow_cowork_file_delete` tool with the lock file's path; once granted, `rm
--f .git/*.lock` succeeds immediately and the commit can be retried. The
-permission covers the whole mounted folder, so if a second lock file shows up
-(e.g. `HEAD.lock` after clearing `index.lock`) it can just be removed too, no
-need to ask again.
 
 ## Sibling repo paths
 

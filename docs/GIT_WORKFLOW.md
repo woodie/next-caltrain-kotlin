@@ -41,7 +41,7 @@ Pattern: `{type}/{issue-number}-{short-description}`
 
 2. **Make changes** — edit files, run `./gradlew installDebug` + launch on
    emulator/device to test interactively (see `docs/COWORK.md` "Install and
-   run on emulator").
+   run on emulator or phone").
 
 3. **Run tests** before committing:
    ```bash
