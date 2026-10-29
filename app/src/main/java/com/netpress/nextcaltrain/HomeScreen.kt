@@ -11,7 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.netpress.nextcaltrain.ui.CircleButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -147,7 +147,7 @@ fun HomeScreen(
             )
             Spacer(modifier = Modifier.weight(1f))
             if (vm.hasManualSelection) {
-                IconButton(
+                CircleButton(
                     onClick = { vm.resetToNext() },
                     modifier = Modifier
                         .size(AppStyle.iconButtonSizeDp.dp)
@@ -164,7 +164,7 @@ fun HomeScreen(
                 }
                 Spacer(modifier = Modifier.width(8.dp))
             }
-            IconButton(
+            CircleButton(
                 onClick = { vm.swapStations() },
                 modifier = Modifier
                     .size(AppStyle.iconButtonSizeDp.dp)
@@ -176,7 +176,7 @@ fun HomeScreen(
         }
 
         // Calendar button — below swap, where the trip list has it too
-        IconButton(
+        CircleButton(
             onClick = { onNavigateToCalendar?.invoke() },
             modifier = Modifier
                 .padding(horizontal = 16.dp)

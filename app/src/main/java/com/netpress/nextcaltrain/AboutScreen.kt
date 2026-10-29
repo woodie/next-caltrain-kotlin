@@ -7,7 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.netpress.nextcaltrain.ui.CircleButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -42,7 +42,7 @@ fun AboutScreen(
     ) {
         // Toolbar — back button (hidden when loading)
         if (!isLoading && onBack != null) {
-            IconButton(
+            CircleButton(
                 onClick = onBack,
                 modifier = Modifier
                     .align(Alignment.TopStart)
